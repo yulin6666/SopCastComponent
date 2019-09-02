@@ -104,7 +104,7 @@ public class LandscapeActivity extends Activity {
     private EditText mipEditText;
     private String mip;
 
-    final String defaultIP = "123.124.164.142";
+    final String defaultIP = "114.247.187.137";
 
     private Handler cameraHandler = new Handler(){
     @Override
@@ -188,16 +188,26 @@ public class LandscapeActivity extends Activity {
         initListeners();
         initLiveView();
         initRtmpAddressDialog();
-        loadLiveViewConfig();
 
         //初始化推流地址
-        SharedPreferences pref = getSharedPreferences("data",MODE_PRIVATE);
-        mid = pref.getString("id","");
-        mPublishUrl = pref.getString("url","rtmp://"+mip+":1935/live_540/");
-        if(TextUtils.isEmpty(mid)) {
-            mUploadDialog.setCanceledOnTouchOutside(false);
-            mUploadDialog.show();
-        }
+//        SharedPreferences pref = getSharedPreferences("data",MODE_PRIVATE);
+//        mid = pref.getString("id","");
+//        mPublishUrl = pref.getString("url","rtmp://"+mip+":1935/live_540/");
+//        if(TextUtils.isEmpty(mid)) {
+//            mUploadDialog.setCanceledOnTouchOutside(false);
+//            mUploadDialog.show();
+//        }
+        mid = "41";
+        mip = defaultIP;
+        mresolution = "540";
+        mProtait = false;
+        SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
+        editor.putString("id",mid);
+        editor.putString("ip",mip);
+        editor.putString("resolution",mresolution);
+        editor.putBoolean("portrait",mOrientationSwitch.isChecked());
+        editor.apply();
+        loadLiveViewConfig();
 
         //根据远端状态来判断
         createSchedulePool();
