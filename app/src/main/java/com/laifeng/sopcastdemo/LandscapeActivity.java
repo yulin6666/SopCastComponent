@@ -199,7 +199,7 @@ public class LandscapeActivity extends Activity {
 //        }
         mid = "41";
         mip = defaultIP;
-        mresolution = "540";
+        mresolution = "720";
         mProtait = false;
         SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
         editor.putString("id",mid);
@@ -496,7 +496,7 @@ public class LandscapeActivity extends Activity {
                 mLFLiveView.setVideoConfiguration(mVideoConfiguration);
                 mRtmpSender.setVideoParams(1920, 1080);
 
-                mPublishUrl = "rtmp://"+mip+":1935/live_landscape_1080p/";
+                mPublishUrl = "rtmp://"+mip+":1935/live/";
             }else if (mresolution.compareTo("720")==0){
                 VideoConfiguration.Builder videoBuilder = new VideoConfiguration.Builder();
                 videoBuilder.setSize(1280, 720).setBps(600,1600);
@@ -505,7 +505,7 @@ public class LandscapeActivity extends Activity {
 
                 mRtmpSender.setVideoParams(1280, 720);
 
-                mPublishUrl = "rtmp://"+mip+":1935/live_720_convert/";
+                mPublishUrl = "rtmp://"+mip+":1935/live_720/";
             }else{
                 Toast.makeText(LandscapeActivity.this, "默认用540", Toast.LENGTH_SHORT).show();
                 VideoConfiguration.Builder videoBuilder = new VideoConfiguration.Builder();
