@@ -186,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void goGps(){
         Intent intent = new Intent(this, gpsActivity.class);
+        intent.putExtra("deviceID", mdeviceID);
         startActivity(intent);
     }
 
