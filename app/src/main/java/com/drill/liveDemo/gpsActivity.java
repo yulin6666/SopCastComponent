@@ -96,7 +96,17 @@ public class gpsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gps);
         Toolbar toolbar = findViewById(R.id.toolbar);
+
         setSupportActionBar(toolbar);
+
+        toolbar.setNavigationIcon(R.drawable.ic_back);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mlocationService.stop();
+                finish();
+            }
+        });
 
         Intent intent = getIntent();
         mdeviceID = intent.getStringExtra("deviceID");

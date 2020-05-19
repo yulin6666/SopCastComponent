@@ -36,6 +36,7 @@
         <activity
             android:name=".gpsActivity"
             android:label="@string/title_activity_gps"
+            android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <!-- 声明service组件 -->
         <service
