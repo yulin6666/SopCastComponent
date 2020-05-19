@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -36,7 +37,10 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -72,6 +76,7 @@ public class gpsActivity extends AppCompatActivity {
             switch (msg.what) {
                 case 1://屏幕刷新内容
                     String Context = (String)msg.obj;
+                    msgTextView.postInvalidate();
                     msgTextView.setText(Context);
                     break;
                 case 2://间隔时间
@@ -312,7 +317,8 @@ public class gpsActivity extends AppCompatActivity {
             {
                 mlongitude=location.getLongitude();
                 mlatitude=location.getLatitude();
-                mdeviceTime =location.getTime();
+                DateFormat dateTimeformat2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                mdeviceTime = dateTimeformat2.format(new Date());
                 mRadius = location.getRadius();
                 mSpeed = location.getSpeed();
                 maddr =location.getAddrStr();
