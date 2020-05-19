@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">feiDemo</string>
+    <string name="title_activity_gps">gps信息</string>
 </resources>

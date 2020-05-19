@@ -111,11 +111,12 @@ public class MainActivity extends AppCompatActivity {
 
     public class HoloTilesAdapter extends BaseAdapter {
 
-        private static final int TILES_COUNT = 2;
+        private static final int TILES_COUNT = 3;
 
         private final int[] DRAWABLES = {
                 R.drawable.blue_tile,
-                R.drawable.green_tile
+                R.drawable.green_tile,
+                R.drawable.purple_tile
         };
 
         @Override
@@ -142,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 v = (RelativeLayout) convertView;
             }
-            v.setBackgroundResource(DRAWABLES[position % 3]);
+            v.setBackgroundResource(DRAWABLES[position % 4]);
 
             TextView textView1 = (TextView) v.findViewById(R.id.textView1);
 
@@ -151,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
                 string1 = "扫二维码";
             } else if(position == 1) {
                 string1 = "演练直播";
+            } else if(position == 2) {
+                string1 = "GPS上报";
             }
             textView1.setText(string1);
 
@@ -162,6 +165,8 @@ public class MainActivity extends AppCompatActivity {
                         goScan();
                     } else if(currentPosition == 1) {
                         golive();
+                    }else if(currentPosition ==2){
+                        goGps();
                     }
                 }
             });
@@ -177,6 +182,10 @@ public class MainActivity extends AppCompatActivity {
     private void golive() {
         Intent intent = new Intent(this, LandscapeActivity.class);
         intent.putExtra("deviceID", mdeviceID);
+        startActivity(intent);
+    }
+    private void goGps(){
+        Intent intent = new Intent(this, gpsActivity.class);
         startActivity(intent);
     }
 
