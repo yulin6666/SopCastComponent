@@ -65,6 +65,8 @@ public class gpsActivity extends AppCompatActivity {
     private double mAltitude;//海拔高度
     private String maddr;//地址信息
     private int mInterval;//上报间隔时间
+    private int mbattery;
+    private String mNetWorkInfo;
 
     private ScheduledExecutorService scheduleExecutor;
     private ScheduledFuture<?> scheduleManager;
@@ -110,6 +112,8 @@ public class gpsActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         mdeviceID = intent.getStringExtra("deviceID");
+        mbattery = intent.getIntExtra("battery",0);
+        mNetWorkInfo = intent.getStringExtra("networkInfo");
 
         msgTextView = (TextView) findViewById(R.id.gpsInfo);
 
@@ -273,6 +277,13 @@ public class gpsActivity extends AppCompatActivity {
                 if(mDirection > 0){
                     uriAPI += String.format("&direction=%f",mDirection);
                 }
+                if(mbattery >= 0){
+                    uriAPI += String.format("&battery=%d",mbattery);
+                }
+                if(!TextUtils.isEmpty(mNetWorkInfo)){
+                    uriAPI += String.format("&networkType=%s",mNetWorkInfo);
+                }
+
 
                 HttpClient postClient = new DefaultHttpClient();
                 HttpPost httpPost = new HttpPost(uriAPI);

@@ -4,7 +4,11 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.nfc.Tag;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -40,11 +44,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static android.net.NetworkInfo.State.CONNECTED;
 import static com.laifeng.sopcastsdk.constant.SopCastConstant.TAG;
 
 public class MainActivity extends AppCompatActivity {
 
     private String mdeviceID;
+    private int mbattery;
+    private String mNetWorkInfo;
+
     private String mScanContent;
 
     @Override
@@ -65,6 +73,28 @@ public class MainActivity extends AppCompatActivity {
         TelephonyManager tm = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
         mdeviceID = tm.getDeviceId().toString();
         Log.d(TAG,String.format("deviceID:%s",mdeviceID));
+
+        //获取电量信息
+        BatteryManager manager = (BatteryManager) getSystemService(BATTERY_SERVICE);
+        mbattery =manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+        Log.d("battery",String.format("battery info:%d",mbattery));
+
+        //获得网络类型
+        Context context = getApplicationContext();
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);        //获取所有网络连接的信息
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            Network[] networks = connectivityManager.getAllNetworks();
+            if (networks != null && networks.length > 0) {
+                int size = networks.length;
+                for (int i=0; i<size; i++) {
+                    NetworkInfo.State state = connectivityManager.getNetworkInfo(networks[i]).getState();
+                    if(state == CONNECTED) {
+                        Log.d("TAG", "=====类型====" + connectivityManager.getNetworkInfo(networks[i]).getTypeName());
+                        mNetWorkInfo = connectivityManager.getNetworkInfo(networks[i]).getTypeName();
+                    }
+                }
+            }
+        }
     }
 
     /** 获取权限*/
@@ -182,11 +212,16 @@ public class MainActivity extends AppCompatActivity {
     private void golive() {
         Intent intent = new Intent(this, LandscapeActivity.class);
         intent.putExtra("deviceID", mdeviceID);
+        intent.putExtra("battery", mbattery);
+        intent.putExtra("networkInfo",mNetWorkInfo);
         startActivity(intent);
     }
     private void goGps(){
         Intent intent = new Intent(this, gpsActivity.class);
         intent.putExtra("deviceID", mdeviceID);
+        intent.putExtra("battery", mbattery);
+        intent.putExtra("networkInfo",mNetWorkInfo);
+
         startActivity(intent);
     }
 

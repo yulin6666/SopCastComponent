@@ -182,8 +182,6 @@ public class LandscapeActivity extends Activity {
 
 
         mStatus = "未推流";//当前状态
-        mNetWorkInfo = "无网络";//当前网络状态
-        mbattery = -1;//电池信息
 
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
@@ -204,7 +202,8 @@ public class LandscapeActivity extends Activity {
 
         Intent intent = getIntent();
         mdeviceID = intent.getStringExtra("deviceID");
-
+        mbattery = intent.getIntExtra("battery",0);
+        mNetWorkInfo = intent.getStringExtra("networkInfo");
     }
 
     private void init(){
@@ -253,51 +252,13 @@ public class LandscapeActivity extends Activity {
         timeTask = new Runnable() {
             @Override
             public void run() {
-                //获得电量信息
-                getBarryInfo();
-                //获得网络状态信息
-                getNetInfo();
-                //上报
+
                 uploadInfo();
             }
         };
         scheduleManager = scheduleExecutor.scheduleAtFixedRate(timeTask, 1, mInterval, TimeUnit.SECONDS);
     }
 
-    private void getBarryInfo(){
-        BatteryManager manager = (BatteryManager) getSystemService(BATTERY_SERVICE);
-        mbattery =manager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-        Log.d("battery",String.format("battery info:%d",mbattery));
-    }
-
-    private void getNetInfo(){
-        //获得ConnectivityManager对象
-        Context context = getApplicationContext();
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);        //获取所有网络连接的信息
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            Network[] networks = connectivityManager.getAllNetworks();
-            if (networks != null && networks.length > 0) {
-                int size = networks.length;
-                for (int i=0; i<size; i++) {
-                   NetworkInfo.State state = connectivityManager.getNetworkInfo(networks[i]).getState();
-                   if(state == CONNECTED) {
-                       Log.d("TAG", "=====类型====" + connectivityManager.getNetworkInfo(networks[i]).getTypeName());
-                       mNetWorkInfo = connectivityManager.getNetworkInfo(networks[i]).getTypeName();
-                   }
-                }
-            }
-        }
-//        else {
-//            NetworkInfo[] networkInfos = connectivityManager.getAllNetworkInfo();
-//            if (networkInfos != null && networkInfos.length > 0) {
-//                int size = networkInfos.length;
-//                for (int i=0; i<size; i++) {
-//                    Log.d("TAG", "=====状态====" + networkInfos[i].getState());
-//                    Log.d("TAG", "=====类型====" + networkInfos[i].getTypeName());
-//                }
-//            }
-//        }
-    }
 
     private void createSchedulePool(){
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
@@ -871,7 +832,7 @@ public class LandscapeActivity extends Activity {
                 if(!TextUtils.isEmpty(mNetWorkInfo)){
                     uriAPI += String.format("&networkType=%s",mNetWorkInfo);
                 }
-                if(mbattery > 0){
+                if(mbattery >= 0){
                     uriAPI += String.format("&battery=%d",mbattery);
                 }
 
