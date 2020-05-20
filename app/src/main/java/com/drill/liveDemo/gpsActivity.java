@@ -141,6 +141,8 @@ public class gpsActivity extends AppCompatActivity {
             mlocationService.stop();// 定位SDK
             mGpsStarted = false;
         }
+
+        init();
     }
 
     private void init(){
@@ -202,16 +204,6 @@ public class gpsActivity extends AppCompatActivity {
                 }
             }
         }, 1, 3, TimeUnit.SECONDS);
-    }
-
-    private void openGps(boolean gpsEnable){
-        if(gpsEnable) {
-            mGpsStarted = true;
-            mlocationService.start();
-        }else{
-            mGpsStarted = false;
-            mlocationService.stop();
-        }
     }
 
     private void changeInterval(int newValue){
@@ -343,48 +335,7 @@ public class gpsActivity extends AppCompatActivity {
                 }
                 mDirection=location.getDirection();
 
-                //屏幕显示
-                StringBuffer sb = new StringBuffer(256);
-                sb.append("编号:");
-                sb.append(mdeviceID);
-                sb.append("\n");
-                sb.append("time:");
-                sb.append(mdeviceTime);
-                sb.append("\n");
-                sb.append("latitude:");
-                sb.append(mlatitude);
-                sb.append("\n");
-                sb.append("longtitude:");
-                sb.append(mlongitude);
-                sb.append("\n");
-                sb.append("radius:");
-                sb.append(mRadius);
-                sb.append("\n");
-                sb.append("speed:");
-                sb.append(mSpeed);
-                sb.append("\n");
-                sb.append("satellite:");
-                sb.append(mSatellite);
-                sb.append("\n");
-                sb.append("height:");
-                sb.append(mAltitude);
-                sb.append("\n");
-                sb.append("direction:");
-                sb.append(mDirection);
-                sb.append("\n");
-                sb.append("addr:");
-                sb.append(maddr);
-                sb.append("\n");
-                sb.append("describe:");
-                sb.append(mlocationType);
-                sb.append("\n");
-
-                String context = sb.toString();
-
-                Message msg = new Message();
-                msg.what = 1;
-                msg.obj = context;
-                cameraHandler.sendMessage(msg);
+               sendDisplayMessage(mlocationType);
 
             }
 //            {
@@ -549,5 +500,61 @@ public class gpsActivity extends AppCompatActivity {
         }
     };
 
+    private void openGps(boolean gpsEnable){
+        if(gpsEnable) {
+            mGpsStarted = true;
+            mlocationService.start();
+        }else{
+            mGpsStarted = false;
+            mlocationService.stop();
+            sendDisplayMessage("gps定位关闭，请远程启动");
+        }
+    }
+
+
+    private void sendDisplayMessage(String display){
+        //屏幕显示
+        StringBuffer sb = new StringBuffer(256);
+        sb.append("编号:");
+        sb.append(mdeviceID);
+        sb.append("\n");
+        sb.append("time:");
+        sb.append(mdeviceTime);
+        sb.append("\n");
+        sb.append("latitude:");
+        sb.append(mlatitude);
+        sb.append("\n");
+        sb.append("longtitude:");
+        sb.append(mlongitude);
+        sb.append("\n");
+        sb.append("radius:");
+        sb.append(mRadius);
+        sb.append("\n");
+        sb.append("speed:");
+        sb.append(mSpeed);
+        sb.append("\n");
+        sb.append("satellite:");
+        sb.append(mSatellite);
+        sb.append("\n");
+        sb.append("height:");
+        sb.append(mAltitude);
+        sb.append("\n");
+        sb.append("direction:");
+        sb.append(mDirection);
+        sb.append("\n");
+        sb.append("addr:");
+        sb.append(maddr);
+        sb.append("\n");
+        sb.append("describe:");
+        sb.append(display);
+        sb.append("\n");
+
+        String context = sb.toString();
+
+        Message msg = new Message();
+        msg.what = 1;
+        msg.obj = context;
+        cameraHandler.sendMessage(msg);
+    }
 
 }
