@@ -144,9 +144,9 @@ public class MainActivity extends AppCompatActivity {
         private static final int TILES_COUNT = 3;
 
         private final int[] DRAWABLES = {
-                R.drawable.blue_tile,
-                R.drawable.green_tile,
-                R.drawable.purple_tile
+                R.drawable.dark,
+                R.drawable.dark,
+                R.drawable.dark
         };
 
         @Override
@@ -179,11 +179,11 @@ public class MainActivity extends AppCompatActivity {
 
             String string1 = "", string2 = "";
             if(position == 0) {
-                string1 = "扫二维码";
+                string1 = "二维码扫描";
             } else if(position == 1) {
                 string1 = "演练直播";
             } else if(position == 2) {
-                string1 = "GPS上报";
+                string1 = "GPS定位";
             }
             textView1.setText(string1);
 

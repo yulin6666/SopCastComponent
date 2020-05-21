@@ -36,7 +36,6 @@
         <activity
             android:name=".gpsActivity"
             android:label="@string/title_activity_gps"
-            android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <!-- 声明service组件 -->
         <service
@@ -48,16 +47,14 @@
             android:value="R15qdlTCD8OIKlwcMsUiZmDpodFIaDEn" /> <!-- http://lbsyun.baidu.com/apiconsole/key -->
         <activity
             android:name=".MainActivity"
-            android:screenOrientation="landscape">
+            android:screenOrientation="sensor">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".LandscapeActivity"
-            android:screenOrientation="landscape" />
+            android:name=".LandscapeActivity"/>
 
         <service
             android:name=".ui.GPSService"
