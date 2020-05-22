@@ -54,7 +54,6 @@ import java.util.concurrent.TimeUnit;
 public class gpsActivity extends AppCompatActivity {
 
     private String mdeviceID;
-    private LocationService mlocationService;
     private boolean mGpsStarted;
 
     private double mlongitude;//经度
@@ -107,7 +106,7 @@ public class gpsActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mlocationService.stop();
+                ((myApplication) getApplication()).mlocationService.stop();
                 finish();
             }
         });
@@ -134,24 +133,30 @@ public class gpsActivity extends AppCompatActivity {
         mAltitude =0;
         maddr ="";
         mDescribe ="";
-        /***
-         * 初始化定位sdk，建议在Application中创建
-         */
-        mlocationService = new LocationService(getApplicationContext());
-        //获取locationservice实例，建议应用中只初始化1个location实例，然后使用，可以参考其他示例的activity，都是通过此种方式获取locationservice实例的
-        mlocationService.registerListener(mListener);
-        mlocationService.setLocationOption(mlocationService.getDefaultLocationClientOption());
 
+
+
+        //获取locationservice实例，建议应用中只初始化1个location实例，然后使用，可以参考其他示例的activity，都是通过此种方式获取locationservice实例的
+        ((myApplication) getApplication()).mlocationService.registerListener(mListener);
+        ((myApplication) getApplication()).mlocationService.setLocationOption(((myApplication) getApplication()).mlocationService.getDefaultLocationClientOption());
 
         if(!mGpsStarted) {
-            mlocationService.start();// 定位SDK
+            ((myApplication) getApplication()).mlocationService.start();// 定位SDK
             mGpsStarted = true;
-        }else{
-            mlocationService.stop();// 定位SDK
-            mGpsStarted = false;
         }
 
         init();
+    }
+
+    protected void onDestroy(){
+        super.onDestroy();
+
+        if(mGpsStarted){
+            ((myApplication) getApplication()).mlocationService.stop();
+             mGpsStarted = false;
+        }
+
+        ((myApplication) getApplication()).mlocationService.unregisterListener(mListener);
     }
 
     private void init(){
@@ -521,13 +526,13 @@ public class gpsActivity extends AppCompatActivity {
     private void openGps(boolean gpsEnable){
         if(gpsEnable) {
             mGpsStarted = true;
-            mlocationService.start();
+            ((myApplication) getApplication()).mlocationService.start();
         }else{
             mGpsStarted = false;
-            mlocationService.stop();
+            ((myApplication) getApplication()).mlocationService.stop();
             mDescribe = "远程关闭GPS，请在控制台打开";
-            sendRefreshMessage();
         }
+        sendRefreshMessage();
     }
 
 
