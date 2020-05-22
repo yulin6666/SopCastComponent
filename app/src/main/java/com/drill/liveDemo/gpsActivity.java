@@ -12,6 +12,10 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.baidu.location.BDAbstractLocationListener;
@@ -49,7 +53,6 @@ import java.util.concurrent.TimeUnit;
 
 public class gpsActivity extends AppCompatActivity {
 
-    private TextView msgTextView;
     private String mdeviceID;
     private LocationService mlocationService;
     private boolean mGpsStarted;
@@ -64,6 +67,7 @@ public class gpsActivity extends AppCompatActivity {
     private int mSatellite;//卫星数目
     private double mAltitude;//海拔高度
     private String maddr;//地址信息
+    private String mDescribe;//描述信息
     private int mInterval;//上报间隔时间
     private int mbattery;
     private String mNetWorkInfo;
@@ -72,14 +76,14 @@ public class gpsActivity extends AppCompatActivity {
     private ScheduledFuture<?> scheduleManager;
     private Runnable timeTask;
 
+    private gpsAdapter mAdapter;
+
     private Handler cameraHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 1://屏幕刷新内容
-                    String Context = (String)msg.obj;
-                    msgTextView.postInvalidate();
-                    msgTextView.setText(Context);
+                    mAdapter.notifyDataSetChanged();
                     break;
                 case 2://间隔时间
                     changeInterval(msg.arg1);
@@ -98,9 +102,7 @@ public class gpsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gps);
         Toolbar toolbar = findViewById(R.id.toolbar);
-
         setSupportActionBar(toolbar);
-
         toolbar.setNavigationIcon(R.drawable.ic_back);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,12 +112,14 @@ public class gpsActivity extends AppCompatActivity {
             }
         });
 
+        GridView grid = (GridView) findViewById(R.id.grid_gps);
+        mAdapter = new gpsActivity.gpsAdapter();
+        grid.setAdapter(mAdapter);
+
         Intent intent = getIntent();
         mdeviceID = intent.getStringExtra("deviceID");
         mbattery = intent.getIntExtra("battery",0);
         mNetWorkInfo = intent.getStringExtra("networkInfo");
-
-        msgTextView = (TextView) findViewById(R.id.gpsInfo);
 
         mGpsStarted = false;
         mlongitude =0;//经度
@@ -129,6 +133,7 @@ public class gpsActivity extends AppCompatActivity {
         mSatellite = 0;
         mAltitude =0;
         maddr ="";
+        mDescribe ="";
         /***
          * 初始化定位sdk，建议在Application中创建
          */
@@ -338,15 +343,15 @@ public class gpsActivity extends AppCompatActivity {
                 if (location.getLocType() == BDLocation.TypeGpsLocation){
                     mAltitude =location.getAltitude();
                     mSatellite = location.getSatelliteNumber();
-                    mlocationType="GPS定位成功";
+                    mDescribe="GPS定位成功";
                 }else if(location.getLocType() == BDLocation.TypeNetWorkLocation){
-                    mlocationType="网络定位成功";
+                    mDescribe="网络定位成功";
                 }else if (location.getLocType() == BDLocation.TypeOffLineLocation){
-                    mlocationType="离线定位成功";
+                    mDescribe="网络定位成功";
                 }
                 mDirection=location.getDirection();
 
-               sendDisplayMessage(mlocationType);
+               sendRefreshMessage();
 
             }
 //            {
@@ -508,6 +513,8 @@ public class gpsActivity extends AppCompatActivity {
                 }
             }
             Log.d("GPS",sb.toString());
+            mDescribe = sb.toString();
+            sendRefreshMessage();
         }
     };
 
@@ -518,54 +525,137 @@ public class gpsActivity extends AppCompatActivity {
         }else{
             mGpsStarted = false;
             mlocationService.stop();
-            sendDisplayMessage("gps定位关闭，请远程启动");
+            mDescribe = "远程关闭GPS，请在控制台打开";
+            sendRefreshMessage();
         }
     }
 
 
-    private void sendDisplayMessage(String display){
-        //屏幕显示
-        StringBuffer sb = new StringBuffer(256);
-        sb.append("编号:");
-        sb.append(mdeviceID);
-        sb.append("\n");
-        sb.append("time:");
-        sb.append(mdeviceTime);
-        sb.append("\n");
-        sb.append("latitude:");
-        sb.append(mlatitude);
-        sb.append("\n");
-        sb.append("longtitude:");
-        sb.append(mlongitude);
-        sb.append("\n");
-        sb.append("radius:");
-        sb.append(mRadius);
-        sb.append("\n");
-        sb.append("speed:");
-        sb.append(mSpeed);
-        sb.append("\n");
-        sb.append("satellite:");
-        sb.append(mSatellite);
-        sb.append("\n");
-        sb.append("height:");
-        sb.append(mAltitude);
-        sb.append("\n");
-        sb.append("direction:");
-        sb.append(mDirection);
-        sb.append("\n");
-        sb.append("addr:");
-        sb.append(maddr);
-        sb.append("\n");
-        sb.append("describe:");
-        sb.append(display);
-        sb.append("\n");
-
-        String context = sb.toString();
+    private void sendRefreshMessage(){
+//        //屏幕显示
+//        StringBuffer sb = new StringBuffer(256);
+//        sb.append("编号:");
+//        sb.append(mdeviceID);
+//        sb.append("\n");
+//        sb.append("time:");
+//        sb.append(mdeviceTime);
+//        sb.append("\n");
+//        sb.append("latitude:");
+//        sb.append(mlatitude);
+//        sb.append("\n");
+//        sb.append("longtitude:");
+//        sb.append(mlongitude);
+//        sb.append("\n");
+//        sb.append("radius:");
+//        sb.append(mRadius);
+//        sb.append("\n");
+//        sb.append("speed:");
+//        sb.append(mSpeed);
+//        sb.append("\n");
+//        sb.append("satellite:");
+//        sb.append(mSatellite);
+//        sb.append("\n");
+//        sb.append("height:");
+//        sb.append(mAltitude);
+//        sb.append("\n");
+//        sb.append("direction:");
+//        sb.append(mDirection);
+//        sb.append("\n");
+//        sb.append("addr:");
+//        sb.append(maddr);
+//        sb.append("\n");
+//        sb.append("describe:");
+//        sb.append(display);
+//        sb.append("\n");
+//
+//        String context = sb.toString();
 
         Message msg = new Message();
         msg.what = 1;
-        msg.obj = context;
+       // msg.obj = context;
         cameraHandler.sendMessage(msg);
     }
+
+    public class gpsAdapter extends BaseAdapter {
+
+        private static final int TILES_COUNT = 11;
+
+        private final int[] DRAWABLES = {
+                R.drawable.dark
+        };
+
+        @Override
+        public int getCount() {
+            return TILES_COUNT;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            RelativeLayout v;
+            if (convertView == null) {
+                v = (RelativeLayout) getLayoutInflater().inflate(R.layout.grid_gps_item, parent, false);
+            } else {
+                v = (RelativeLayout) convertView;
+            }
+            v.setBackgroundResource(DRAWABLES[0]);
+
+            TextView textView1 = (TextView) v.findViewById(R.id.gps_textView1);
+            TextView textView2 = (TextView) v.findViewById(R.id.gps_textView2);
+
+
+            String string1 = "", string2 = "";
+            if(position == 0) {
+                string1 = "编号:";
+                string2 = mdeviceID;
+            } else if(position == 1) {
+                string1 = "time:";
+                string2 = mdeviceTime;
+            } else if(position == 2) {
+                string1 = "latitude:";
+                string2 = String.format("%f",mlatitude);
+            }else if(position ==3){
+                string1 = "longtitude:";
+                string2 = String.format("%f",mlongitude);
+            }else if(position ==4){
+                string1 = "radius:";
+                string2 = String.format("%f",mRadius);
+            }else if(position ==5){
+                string1 = "speed:";
+                string2 = String.format("%f",mSpeed);
+            }else if(position ==6){
+                string1 = "satellite:";
+                string2 = String.format("%d",mSatellite);
+            }else if(position ==7){
+                string1 = "height:";
+                string2 = String.format("%f",mAltitude);
+            }else if(position ==8){
+                string1 = "direction:";
+                string2 = String.format("%f",mDirection);
+            }else if(position ==9){
+                string1 = "addr:";
+                string2 = maddr;
+            }else if(position == 10){
+                string1 = "describe:";
+                string2 = mDescribe;
+            }
+
+            textView1.setText(string1);
+            textView2.setText(string2);
+
+            return v;
+        }
+    }
+
 
 }

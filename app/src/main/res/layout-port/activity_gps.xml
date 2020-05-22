@@ -20,7 +20,8 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_gps" />
+    <include
+        layout="@layout/content_gps" />
 
 
 </android.support.design.widget.CoordinatorLayout>
