@@ -25,8 +25,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.yzq.zxinglibrary.android.CaptureActivity;
-import com.yzq.zxinglibrary.common.Constant;
+
+import com.google.zxing.client.android.CaptureActivity;
+import com.google.zxing.client.android.Intents;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -206,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void goScan() {
         Intent intent = new Intent(MainActivity.this, CaptureActivity.class);
+        intent.setAction(Intents.Scan.ACTION);
         startActivityForResult(intent, 111);
     }
 
@@ -232,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 111) {
             if (data != null) {
 
-                mScanContent = data.getStringExtra(Constant.CODED_CONTENT);
+                mScanContent = data.getStringExtra(Intents.Scan.RESULT);
                 Log.d("",String.format("结果为:%s",mScanContent));
 
                 new Thread(new Runnable() {

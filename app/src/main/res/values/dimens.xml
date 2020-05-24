@@ -7,4 +7,6 @@
     <dimen name="nice_option_width">48dp</dimen>
     <dimen name="nice_option_height">48dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="standard_padding">8dip</dimen>
+     <dimen name="half_padding">4dip</dimen>
 </resources>
