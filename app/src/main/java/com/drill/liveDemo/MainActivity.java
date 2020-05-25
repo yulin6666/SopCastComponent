@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
     public class HoloTilesAdapter extends BaseAdapter {
 
-        private static final int TILES_COUNT = 3;
+        private static final int TILES_COUNT = 2;
 
         private final int[] DRAWABLES = {
                 R.drawable.dark,
@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 v = (RelativeLayout) convertView;
             }
-            v.setBackgroundResource(DRAWABLES[position % 4]);
+            v.setBackgroundResource(DRAWABLES[position % 3]);
 
             TextView textView1 = (TextView) v.findViewById(R.id.textView1);
 
@@ -183,9 +183,10 @@ public class MainActivity extends AppCompatActivity {
                 string1 = "二维码扫描";
             } else if(position == 1) {
                 string1 = "演练直播";
-            } else if(position == 2) {
-                string1 = "GPS定位";
             }
+//            else if(position == 2) {
+//                string1 = "GPS定位";
+//            }
             textView1.setText(string1);
 
             final int currentPosition = position;
@@ -196,9 +197,10 @@ public class MainActivity extends AppCompatActivity {
                         goScan();
                     } else if(currentPosition == 1) {
                         golive();
-                    }else if(currentPosition ==2){
-                        goGps();
                     }
+//                    else if(currentPosition ==2){
+//                        goGps();
+//                    }
                 }
             });
             return v;
@@ -218,14 +220,14 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("networkInfo",mNetWorkInfo);
         startActivity(intent);
     }
-    private void goGps(){
-        Intent intent = new Intent(this, gpsActivity.class);
-        intent.putExtra("deviceID", mdeviceID);
-        intent.putExtra("battery", mbattery);
-        intent.putExtra("networkInfo",mNetWorkInfo);
-
-        startActivity(intent);
-    }
+//    private void goGps(){
+//        Intent intent = new Intent(this, gpsActivity.class);
+//        intent.putExtra("deviceID", mdeviceID);
+//        intent.putExtra("battery", mbattery);
+//        intent.putExtra("networkInfo",mNetWorkInfo);
+//
+//        startActivity(intent);
+//    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
