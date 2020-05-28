@@ -6,6 +6,8 @@
     <dimen name="option_button_circle_size">48dp</dimen>
     <dimen name="nice_option_width">48dp</dimen>
     <dimen name="nice_option_height">48dp</dimen>
+    <dimen name="nice_option2_width">60dp</dimen>
+    <dimen name="nice_option2_height">60dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="standard_padding">8dip</dimen>
      <dimen name="half_padding">4dip</dimen>

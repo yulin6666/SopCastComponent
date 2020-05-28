@@ -30,7 +30,7 @@
         <item>@drawable/ic_focus_off</item>
         <item>@drawable/ic_focus_on</item>
     </array>
-
+˝
     <array name="record_mic_icons" translatable="false">
         <item>@drawable/ic_mic_on</item>
         <item>@drawable/ic_mic_off</item>
@@ -44,6 +44,9 @@
     <array name="gps_icons" translatable="false">
         <item>@drawable/gps_off</item>
         <item>@drawable/gps_on</item>
+    </array>
+    <array name="scan_icons" translatable="false">
+        <item>@drawable/scan_on</item>
     </array>
     <string-array name="country_codes" tools:ignore="MissingTranslation">
       <item>-</item>

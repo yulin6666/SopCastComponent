@@ -15,6 +15,13 @@
         <item name="android:background">@null</item>
     </style>
 
+    <style name="NiceOption2">
+        <item name="android:layout_width">@dimen/nice_option2_width</item>
+        <item name="android:layout_height">@dimen/nice_option2_height</item>
+        <item name="android:layout_margin">1dp</item>
+        <item name="android:background">@null</item>
+    </style>
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>

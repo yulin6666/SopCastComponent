@@ -22,43 +22,47 @@
         android:clipToPadding="false"
         android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/backBtn"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="@mipmap/back" />
+        <!--<ImageButton-->
+            <!--android:id="@+id/backBtn"-->
+            <!--android:layout_width="30dp"-->
+            <!--android:layout_height="30dp"-->
+            <!--android:background="@mipmap/back" />-->
+        <!--<com.drill.liveDemo.ui.MultiToggleImageButton-->
+            <!--android:id="@+id/camera_flash_button"-->
+            <!--style="@style/NiceOption"-->
+            <!--app:imageIds="@array/camera_flashmode_icons" />-->
+        <!--<com.drill.liveDemo.ui.MultiToggleImageButton-->
+            <!--android:id="@+id/camera_switch_button"-->
+            <!--style="@style/NiceOption"-->
+            <!--app:imageIds="@array/camera_id_icons" />-->
+        <!--<com.drill.liveDemo.ui.MultiToggleImageButton-->
+            <!--android:id="@+id/id_button"-->
+            <!--style="@style/NiceOption"-->
+            <!--app:imageIds="@array/camera_render_icons" />-->
+        <!--<com.drill.liveDemo.ui.MultiToggleImageButton-->
+            <!--android:id="@+id/id_gps"-->
+            <!--style="@style/NiceOption"-->
+            <!--app:imageIds="@array/gps_icons" />-->
         <com.drill.liveDemo.ui.MultiToggleImageButton
-            android:id="@+id/camera_flash_button"
-            style="@style/NiceOption"
-            app:imageIds="@array/camera_flashmode_icons" />
-        <com.drill.liveDemo.ui.MultiToggleImageButton
-            android:id="@+id/camera_switch_button"
-            style="@style/NiceOption"
-            app:imageIds="@array/camera_id_icons" />
-        <com.drill.liveDemo.ui.MultiToggleImageButton
-            android:id="@+id/id_button"
-            style="@style/NiceOption"
-            app:imageIds="@array/camera_render_icons" />
-        <com.drill.liveDemo.ui.MultiToggleImageButton
-            android:id="@+id/id_gps"
-            style="@style/NiceOption"
-            app:imageIds="@array/gps_icons" />
+        android:id="@+id/id_scan"
+        style="@style/NiceOption"
+        app:imageIds="@array/scan_icons" />
     </com.drill.liveDemo.ui.TopRightWeightedLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="#4d000000"
-        android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true">
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="100dp"-->
+        <!--android:background="#4d000000"-->
+        <!--android:gravity="center"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_centerHorizontal="true">-->
 
-        <ImageButton
-            android:id="@+id/btnRecord"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:background="@mipmap/ic_record_start" />
-    </LinearLayout>
+        <!--<ImageButton-->
+            <!--android:id="@+id/btnRecord"-->
+            <!--android:layout_width="60dp"-->
+            <!--android:layout_height="60dp"-->
+            <!--android:background="@mipmap/ic_record_start" />-->
+    <!--</LinearLayout>-->
 
     <ProgressBar
         android:id="@+id/progressConnecting"

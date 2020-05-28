@@ -105,16 +105,16 @@ import static com.laifeng.sopcastsdk.constant.SopCastConstant.TAG;
 
 public class LandscapeActivity extends Activity {
     private CameraLivingView mLFLiveView;
-    private MultiToggleImageButton mFlashBtn;
-    private MultiToggleImageButton mFaceBtn;
-    private MultiToggleImageButton midBtn;
-    private MultiToggleImageButton mgpsBtn;
-    private ImageButton mbackBtn;
+//    private MultiToggleImageButton mFlashBtn;
+//    private MultiToggleImageButton mFaceBtn;
+//    private MultiToggleImageButton midBtn;
+//    private MultiToggleImageButton mgpsBtn;
+//    private ImageButton mbackBtn;
     private Switch mOrientationSwitch;
     private GestureDetector mGestureDetector;
     private GrayEffect mGrayEffect;
     private NullEffect mNullEffect;
-    private ImageButton mRecordBtn;
+//    private ImageButton mRecordBtn;
     private boolean isGray;
     private boolean isRecording;
     private ProgressBar mProgressConnecting;
@@ -136,6 +136,7 @@ public class LandscapeActivity extends Activity {
 
     private String mdeviceID;
     private String mStatus;
+    private boolean mstreamStatus;
     private String mNetWorkInfo;
     private int mbattery;
 
@@ -207,6 +208,8 @@ public class LandscapeActivity extends Activity {
                 ActivityCompat.requestPermissions(LandscapeActivity.this,
                         new String[]{
                                 Manifest.permission.CAMERA,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.RECORD_AUDIO,
                                 Manifest.permission.ACCESS_COARSE_LOCATION,
                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.READ_PHONE_STATE,
@@ -230,7 +233,7 @@ public class LandscapeActivity extends Activity {
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 1: {
-                if (grantResults.length > 0 && grantResults[3] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[5] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
                     Log.i("LandscapeActivity", "dialog权限回调");
                     init();
@@ -249,8 +252,8 @@ public class LandscapeActivity extends Activity {
 
     private void init() {
 
-        mStatus = "未推流";//当前状态
-
+        mStatus = "初始化";//当前状态
+        mstreamStatus = false;
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -362,12 +365,12 @@ public class LandscapeActivity extends Activity {
 
     private void initViews() {
         mLFLiveView = (CameraLivingView) findViewById(R.id.liveView);
-        mFlashBtn = (MultiToggleImageButton) findViewById(R.id.camera_flash_button);
-        mFaceBtn = (MultiToggleImageButton) findViewById(R.id.camera_switch_button);
-        midBtn = (MultiToggleImageButton) findViewById(R.id.id_button);
+//        mFlashBtn = (MultiToggleImageButton) findViewById(R.id.camera_flash_button);
+//        mFaceBtn = (MultiToggleImageButton) findViewById(R.id.camera_switch_button);
+//       midBtn = (MultiToggleImageButton) findViewById(R.id.id_button);
 //        mgpsBtn = (MultiToggleImageButton) findViewById(R.id.id_gps);
-        mRecordBtn = (ImageButton) findViewById(R.id.btnRecord);
-        mbackBtn = (ImageButton) findViewById(R.id.backBtn);
+//        mRecordBtn = (ImageButton) findViewById(R.id.btnRecord);
+//        mbackBtn = (ImageButton) findViewById(R.id.backBtn);
         mProgressConnecting = (ProgressBar) findViewById(R.id.progressConnecting);
     }
 
@@ -414,7 +417,7 @@ public class LandscapeActivity extends Activity {
                                 //车牌号
                                 if(!jsonObject.isNull("streamID")){
                                     String carId = jsonObject.getString("streamID");
-                                    if(carId != mid){
+                                    if(!carId.equals(mid)){
                                         Message msg= new Message();
                                         msg.what = 3;
                                         msg.obj = carId;
@@ -431,7 +434,7 @@ public class LandscapeActivity extends Activity {
                                     }else if(resolution.compareTo(" 1080P")==0){
                                         resolution = "1080";
                                     }
-                                    if(resolution != mresolution){
+                                    if(!resolution.equals(mresolution)){
                                         Message msg= new Message();
                                         msg.what = 4;
                                         msg.obj = resolution;
@@ -441,7 +444,7 @@ public class LandscapeActivity extends Activity {
                                 //推流地址
                                 if(!jsonObject.isNull("ip")){
                                     String ip = jsonObject.getString("ip");
-                                    if(ip != mip){
+                                    if(!ip.equals(mip)){
                                         Message msg= new Message();
                                         msg.what = 5;
                                         msg.obj = ip;
@@ -486,29 +489,29 @@ public class LandscapeActivity extends Activity {
     }
 
     private void initListeners() {
-        mFlashBtn.setOnStateChangeListener(new MultiToggleImageButton.OnStateChangeListener() {
-            @Override
-            public void stateChanged(View view, int state) {
-                mLFLiveView.switchTorch();
-            }
-        });
-        mFaceBtn.setOnStateChangeListener(new MultiToggleImageButton.OnStateChangeListener() {
-            @Override
-            public void stateChanged(View view, int state) {
-                mLFLiveView.switchCamera();
-            }
-        });
-        midBtn.setOnStateChangeListener(new MultiToggleImageButton.OnStateChangeListener(){
-            public void stateChanged(View view, int state) {
-                mUploadDialog.setCanceledOnTouchOutside(false);
-                mAddressET.setText(mid);
-                msolution.setText(mresolution);
-                mOrientationSwitch.setChecked(mProtait);
-                mipEditText.setText(mip);
-                mUploadDialog.show();
-
-            }
-        });
+//        mFlashBtn.setOnStateChangeListener(new MultiToggleImageButton.OnStateChangeListener() {
+//            @Override
+//            public void stateChanged(View view, int state) {
+//                mLFLiveView.switchTorch();
+//            }
+//        });
+//        mFaceBtn.setOnStateChangeListener(new MultiToggleImageButton.OnStateChangeListener() {
+//            @Override
+//            public void stateChanged(View view, int state) {
+//                mLFLiveView.switchCamera();
+//            }
+//        });
+//        midBtn.setOnStateChangeListener(new MultiToggleImageButton.OnStateChangeListener(){
+//            public void stateChanged(View view, int state) {
+//                mUploadDialog.setCanceledOnTouchOutside(false);
+//                mAddressET.setText(mid);
+//                msolution.setText(mresolution);
+//                mOrientationSwitch.setChecked(mProtait);
+//                mipEditText.setText(mip);
+//                mUploadDialog.show();
+//
+//            }
+//        });
 //        mgpsBtn.setOnStateChangeListener(new MultiToggleImageButton.OnStateChangeListener() {
 //            @Override
 //            public void stateChanged(View view, int state) {
@@ -529,22 +532,22 @@ public class LandscapeActivity extends Activity {
 //                }
 //            }
 //        });
-        mRecordBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(isRecording) {
-                    stopLive();
-                } else {
-                    startLive();
-                }
-            }
-        });
-        mbackBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LandscapeActivity.this.finish();
-            }
-        });
+//        mRecordBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if(isRecording) {
+//                    stopLive();
+//                } else {
+//                    startLive();
+//                }
+//            }
+//        });
+//        mbackBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                LandscapeActivity.this.finish();
+//            }
+//        });
     }
 
     private void initRtmpAddressDialog() {
@@ -671,9 +674,10 @@ public class LandscapeActivity extends Activity {
     private void stopLive(){
         mProgressConnecting.setVisibility(View.GONE);
         Toast.makeText(LandscapeActivity.this, "停止直播！", Toast.LENGTH_SHORT).show();
-        mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
+//        mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
         mLFLiveView.stop();
         isRecording = false;
+        mstreamStatus = false;
     }
     private void startLive(){
         if(TextUtils.isEmpty(mid)) {
@@ -686,10 +690,11 @@ public class LandscapeActivity extends Activity {
         mRtmpSender.setAddress(uploadUrl);
         mProgressConnecting.setVisibility(View.VISIBLE);
         Toast.makeText(LandscapeActivity.this, "start connecting", Toast.LENGTH_SHORT).show();
-        mRecordBtn.setBackgroundResource(R.mipmap.ic_record_stop);
+//        mRecordBtn.setBackgroundResource(R.mipmap.ic_record_stop);
         mRtmpSender.connect();
         isRecording = true;
         mStatus = "正常";
+        mstreamStatus = true;
     }
 
     private void initLiveView() {
@@ -852,7 +857,7 @@ public class LandscapeActivity extends Activity {
         public void onDisConnected() {
             mProgressConnecting.setVisibility(View.GONE);
             Toast.makeText(LandscapeActivity.this, "fail to live", Toast.LENGTH_SHORT).show();
-            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
+//            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
             mLFLiveView.stop();
             isRecording = false;
         }
@@ -861,7 +866,7 @@ public class LandscapeActivity extends Activity {
         public void onPublishFail() {
             mProgressConnecting.setVisibility(View.GONE);
             Toast.makeText(LandscapeActivity.this, "fail to publish stream", Toast.LENGTH_SHORT).show();
-            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
+//            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
             isRecording = false;
         }
 
@@ -983,6 +988,7 @@ public class LandscapeActivity extends Activity {
                 String uriAPI = "http://drli.urthe1.xyz/api/updateDevicesStatus?deviceID=" + mdeviceID+"&streamID="+mid;
                 if(!TextUtils.isEmpty(mStatus)){
                     uriAPI += String.format("&appStatus=%s",mStatus);
+                    uriAPI += String.format("&streamStatus=%b",mstreamStatus);
                 }
                 if(!TextUtils.isEmpty(mNetWorkInfo)){
                     uriAPI += String.format("&networkType=%s",mNetWorkInfo);
