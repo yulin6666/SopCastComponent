@@ -3,20 +3,15 @@ package com.drill.liveDemo;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.Service;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -28,7 +23,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -40,16 +34,12 @@ import android.os.Build;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
-import com.baidu.location.Poi;
-import com.baidu.location.PoiRegion;
-import com.drill.liveDemo.ui.MultiToggleImageButton;
-import com.drill.liveDemo.ui.GPSService;
+import com.google.zxing.client.android.CaptureActivity;
+import com.google.zxing.client.android.Intents;
 import com.laifeng.sopcastsdk.camera.CameraListener;
 import com.laifeng.sopcastsdk.configuration.AudioConfiguration;
 import com.laifeng.sopcastsdk.configuration.CameraConfiguration;
 import com.laifeng.sopcastsdk.configuration.VideoConfiguration;
-import com.laifeng.sopcastsdk.entity.Watermark;
-import com.laifeng.sopcastsdk.entity.WatermarkPosition;
 import com.laifeng.sopcastsdk.stream.packer.rtmp.RtmpPacker;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.RtmpSender;
 import com.laifeng.sopcastsdk.ui.CameraLivingView;
@@ -82,30 +72,23 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.*;
 import org.apache.http.impl.client.*;
 
 import android.content.pm.PackageManager;
 
-import com.drill.liveDemo.baiduGps.LocationService;
-
-import android.app.Application;
-import android.app.Service;
-import android.os.Vibrator;
-
 import static android.net.NetworkInfo.State.CONNECTED;
 import static com.laifeng.sopcastsdk.constant.SopCastConstant.TAG;
 
 public class LandscapeActivity extends Activity {
     private CameraLivingView mLFLiveView;
-//    private MultiToggleImageButton mFlashBtn;
+    private ImageButton mScanButton;
+    //    private MultiToggleImageButton mFlashBtn;
 //    private MultiToggleImageButton mFaceBtn;
 //    private MultiToggleImageButton midBtn;
 //    private MultiToggleImageButton mgpsBtn;
@@ -143,9 +126,13 @@ public class LandscapeActivity extends Activity {
     //动态配置信息
     private int mInterval;//上报间隔时间
 
-    private ScheduledExecutorService scheduleExecutor;
-    private ScheduledFuture<?> scheduleManager;
-    private Runnable timeTask;
+    private ScheduledExecutorService uploaderScheduleExecutor;
+    private ScheduledFuture<?> uploaderScheduleManager;
+    private Runnable uploaderTimeTask;
+
+    private ScheduledExecutorService controlScheduleExecutor;
+    private ScheduledFuture<?> controlScheduleManager;
+    private Runnable controlTimeTask;
 
     //GPS相关信息
     private boolean mGpsStarted;
@@ -314,11 +301,6 @@ public class LandscapeActivity extends Activity {
         //获取locationservice实例，建议应用中只初始化1个location实例，然后使用，可以参考其他示例的activity，都是通过此种方式获取locationservice实例的
         ((myApplication) getApplication()).mlocationService.registerListener(mListener);
         ((myApplication) getApplication()).mlocationService.setLocationOption(((myApplication) getApplication()).mlocationService.getDefaultLocationClientOption());
-
-        if (!mGpsStarted) {
-            ((myApplication) getApplication()).mlocationService.start();// 定位SDK
-            mGpsStarted = true;
-        }
     }
 
     private void initDeviceID() {
@@ -365,6 +347,7 @@ public class LandscapeActivity extends Activity {
 
     private void initViews() {
         mLFLiveView = (CameraLivingView) findViewById(R.id.liveView);
+        mScanButton = (ImageButton)findViewById(R.id.id_scan_button);
 //        mFlashBtn = (MultiToggleImageButton) findViewById(R.id.camera_flash_button);
 //        mFaceBtn = (MultiToggleImageButton) findViewById(R.id.camera_switch_button);
 //       midBtn = (MultiToggleImageButton) findViewById(R.id.id_button);
@@ -375,21 +358,21 @@ public class LandscapeActivity extends Activity {
     }
 
     private void createUploadPool(){
-        scheduleExecutor = Executors.newScheduledThreadPool(5);
-        timeTask = new Runnable() {
+        uploaderScheduleExecutor = Executors.newScheduledThreadPool(5);
+        uploaderTimeTask = new Runnable() {
             @Override
             public void run() {
 
                 uploadInfo();
             }
         };
-        scheduleManager = scheduleExecutor.scheduleAtFixedRate(timeTask, 1, mInterval, TimeUnit.SECONDS);
+        uploaderScheduleManager = uploaderScheduleExecutor.scheduleAtFixedRate(uploaderTimeTask, 1, mInterval, TimeUnit.SECONDS);
     }
 
 
     private void createSchedulePool(){
-        ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
-        scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+        controlScheduleExecutor = Executors.newScheduledThreadPool(5);
+        controlTimeTask= new Runnable() {
 
             @Override
             public void run() {
@@ -485,10 +468,46 @@ public class LandscapeActivity extends Activity {
                     e.printStackTrace();
                 }
          }
-        }, 1, 3, TimeUnit.SECONDS);
+        };
+
+        controlScheduleManager = controlScheduleExecutor.scheduleAtFixedRate(controlTimeTask, 1, 3, TimeUnit.SECONDS);
+
     }
 
     private void initListeners() {
+        mScanButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(mLFLiveView!=null){
+                    mLFLiveView.stop();
+                    mLFLiveView.release();
+                }
+
+                if (uploaderScheduleManager != null)
+                {
+                    uploaderScheduleManager.cancel(true);
+                    uploaderScheduleManager = null;
+                }
+                if(controlScheduleManager != null){
+                    controlScheduleManager.cancel(true);
+                    controlScheduleManager = null;
+                }
+
+
+                new Handler(new Handler.Callback() {
+                    @Override
+                    public boolean handleMessage(Message msg) {
+                        //实现页面跳转
+                        Intent intent = new Intent(LandscapeActivity.this, CaptureActivity.class);
+                        intent.setAction(Intents.Scan.ACTION);
+                        startActivityForResult(intent, 111);
+                        return true;
+                    };
+                }).sendEmptyMessageDelayed(0,1000);//表示延迟1秒发送任务
+
+            }
+        });
 //        mFlashBtn.setOnStateChangeListener(new MultiToggleImageButton.OnStateChangeListener() {
 //            @Override
 //            public void stateChanged(View view, int state) {
@@ -569,7 +588,7 @@ public class LandscapeActivity extends Activity {
             public void onClick(View v) {
                 mid = mAddressET.getText().toString();
                 if(TextUtils.isEmpty(mid)) {
-                    Toast.makeText(LandscapeActivity.this, "车号ID不为空!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(LandscapeActivity.this, "车号ID不为空!", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -633,11 +652,11 @@ public class LandscapeActivity extends Activity {
 
     private void changeInterval(int newValue){
         mInterval = newValue;
-        if (scheduleManager!= null)
+        if (uploaderScheduleManager != null)
         {
-            scheduleManager.cancel(true);
+            uploaderScheduleManager.cancel(true);
         }
-        scheduleManager = scheduleExecutor.scheduleAtFixedRate(timeTask, 1, mInterval, TimeUnit.SECONDS);
+        uploaderScheduleManager = uploaderScheduleExecutor.scheduleAtFixedRate(uploaderTimeTask, 1, mInterval, TimeUnit.SECONDS);
     }
 
     private void changeCarId(String carID){
@@ -645,16 +664,18 @@ public class LandscapeActivity extends Activity {
         SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
         editor.putString("id",mid);
         editor.apply();
-        Toast.makeText(LandscapeActivity.this, "修改车牌ID为:"+mid, Toast.LENGTH_SHORT).show();
+        Toast.makeText(LandscapeActivity.this, "车牌ID修改为:"+mid, Toast.LENGTH_SHORT).show();
     }
     private void changeResolution(String resolution){
         mresolution = resolution;
+        Toast.makeText(LandscapeActivity.this, "清晰度修改为:"+mresolution, Toast.LENGTH_SHORT).show();
         SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
         editor.putString("resolution",mresolution);
         editor.apply();
     }
     private void changeIp(String ip){
         mip = ip;
+        Toast.makeText(LandscapeActivity.this, "ip修改为:"+mip, Toast.LENGTH_SHORT).show();
         SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
         editor.putString("ip",mresolution);
         editor.apply();
@@ -663,10 +684,14 @@ public class LandscapeActivity extends Activity {
         if(gpsEnable) {
             mGpsStarted = true;
             ((myApplication) getApplication()).mlocationService.start();
+            Toast.makeText(LandscapeActivity.this, "打开GPS!", Toast.LENGTH_SHORT).show();
+
         }else{
             mGpsStarted = false;
             ((myApplication) getApplication()).mlocationService.stop();
             mDescribe = "远程关闭GPS，请在控制台打开";
+            Toast.makeText(LandscapeActivity.this, "关闭GPS!", Toast.LENGTH_SHORT).show();
+
         }
         //sendRefreshMessage();
     }
@@ -686,10 +711,10 @@ public class LandscapeActivity extends Activity {
         }
         String uploadUrl = mPublishUrl+mid;
         Log.i("mid","url:"+uploadUrl);
-        Toast.makeText(LandscapeActivity.this,uploadUrl, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(LandscapeActivity.this,uploadUrl, Toast.LENGTH_SHORT).show();
         mRtmpSender.setAddress(uploadUrl);
         mProgressConnecting.setVisibility(View.VISIBLE);
-        Toast.makeText(LandscapeActivity.this, "start connecting", Toast.LENGTH_SHORT).show();
+        Toast.makeText(LandscapeActivity.this, "准备开始直播", Toast.LENGTH_SHORT).show();
 //        mRecordBtn.setBackgroundResource(R.mipmap.ic_record_stop);
         mRtmpSender.connect();
         isRecording = true;
@@ -722,17 +747,17 @@ public class LandscapeActivity extends Activity {
         mLFLiveView.setCameraOpenListener(new CameraListener() {
             @Override
             public void onOpenSuccess() {
-                Toast.makeText(LandscapeActivity.this, "camera open success", Toast.LENGTH_LONG).show();
+                Toast.makeText(LandscapeActivity.this, "相机打开成功", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onOpenFail(int error) {
-                Toast.makeText(LandscapeActivity.this, "camera open fail", Toast.LENGTH_LONG).show();
+                Toast.makeText(LandscapeActivity.this, "相机打开失败", Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onCameraChange() {
-                Toast.makeText(LandscapeActivity.this, "camera switch", Toast.LENGTH_LONG).show();
+                Toast.makeText(LandscapeActivity.this, "相机切换", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -759,7 +784,7 @@ public class LandscapeActivity extends Activity {
             @Override
             public void startError(int error) {
                 //直播失败
-                Toast.makeText(LandscapeActivity.this, "start living fail", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LandscapeActivity.this, "直播失败", Toast.LENGTH_SHORT).show();
                 mLFLiveView.stop();
             }
 
@@ -797,7 +822,7 @@ public class LandscapeActivity extends Activity {
 
                 mPublishUrl = "rtmp://"+mip+"/live_720_convert/";
             }else{
-                Toast.makeText(LandscapeActivity.this, "默认用540", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LandscapeActivity.this, "默认用540", Toast.LENGTH_SHORT).show();
                 VideoConfiguration.Builder videoBuilder = new VideoConfiguration.Builder();
                 videoBuilder.setSize(960, 540).setBps(450,1200);
                 mVideoConfiguration = videoBuilder.build();
@@ -827,7 +852,7 @@ public class LandscapeActivity extends Activity {
 
                 mPublishUrl = "rtmp://"+mip+"/live_portrait_720p/";
             }else{
-                Toast.makeText(LandscapeActivity.this, "默认用540", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LandscapeActivity.this, "默认用540", Toast.LENGTH_SHORT).show();
                 VideoConfiguration.Builder videoBuilder = new VideoConfiguration.Builder();
                 videoBuilder.setSize(540, 960).setBps(450,1200);
                 mVideoConfiguration = videoBuilder.build();
@@ -865,7 +890,7 @@ public class LandscapeActivity extends Activity {
         @Override
         public void onPublishFail() {
             mProgressConnecting.setVisibility(View.GONE);
-            Toast.makeText(LandscapeActivity.this, "fail to publish stream", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(LandscapeActivity.this, "fail to publish stream", Toast.LENGTH_SHORT).show();
 //            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
             isRecording = false;
         }
@@ -911,11 +936,11 @@ public class LandscapeActivity extends Activity {
             if (e1.getX() - e2.getX() > 100
                     && Math.abs(velocityX) > 200) {
                 // Fling left
-                Toast.makeText(LandscapeActivity.this, "Fling Left", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LandscapeActivity.this, "Fling Left", Toast.LENGTH_SHORT).show();
             } else if (e2.getX() - e1.getX() > 100
                     && Math.abs(velocityX) > 200) {
                 // Fling right
-                Toast.makeText(LandscapeActivity.this, "Fling Right", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LandscapeActivity.this, "Fling Right", Toast.LENGTH_SHORT).show();
             }
             return super.onFling(e1, e2, velocityX, velocityY);
         }
@@ -947,6 +972,7 @@ public class LandscapeActivity extends Activity {
         if(mGpsStarted){
             ((myApplication) getApplication()).mlocationService.stop();
             mGpsStarted = false;
+
         }
 
         ((myApplication) getApplication()).mlocationService.unregisterListener(mListener);
@@ -1248,4 +1274,13 @@ public class LandscapeActivity extends Activity {
         }
     };
 
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 111) {
+
+            uploaderScheduleManager = uploaderScheduleExecutor.scheduleAtFixedRate(uploaderTimeTask, 1, mInterval, TimeUnit.SECONDS);
+            controlScheduleManager = controlScheduleExecutor.scheduleAtFixedRate(uploaderTimeTask, 1, 3, TimeUnit.SECONDS);
+        }
+    };
 }

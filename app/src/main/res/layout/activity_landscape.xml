@@ -39,10 +39,11 @@
             <!--android:id="@+id/id_button"-->
             <!--style="@style/NiceOption"-->
             <!--app:imageIds="@array/camera_render_icons" />-->
-        <com.drill.liveDemo.ui.MultiToggleImageButton
-            android:id="@+id/id_scan"
-            style="@style/NiceOption"
-            app:imageIds="@array/scan_icons" />
+        <ImageButton
+        android:id="@+id/id_scan_button"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@mipmap/scan" />
     </com.drill.liveDemo.ui.TopRightWeightedLayout>
 
     <!--<LinearLayout-->
