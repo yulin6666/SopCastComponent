@@ -967,6 +967,7 @@ public class LandscapeActivity extends Activity {
         if(mLFLiveView!=null){
             mLFLiveView.stop();
             mLFLiveView.release();
+            mLFLiveView = null;
         }
 
         if(mGpsStarted){
@@ -1278,9 +1279,7 @@ public class LandscapeActivity extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 111) {
-
-            uploaderScheduleManager = uploaderScheduleExecutor.scheduleAtFixedRate(uploaderTimeTask, 1, mInterval, TimeUnit.SECONDS);
-            controlScheduleManager = controlScheduleExecutor.scheduleAtFixedRate(uploaderTimeTask, 1, 3, TimeUnit.SECONDS);
+            init();
         }
     };
 }
