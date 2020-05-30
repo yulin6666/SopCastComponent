@@ -478,17 +478,21 @@ public class LandscapeActivity extends Activity {
         mScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //停止直播
+                stopLive();
 
+                //释放view
                 if(mLFLiveView!=null){
-                    mLFLiveView.stop();
                     mLFLiveView.release();
                 }
 
+                //关闭上报定时器
                 if (uploaderScheduleManager != null)
                 {
                     uploaderScheduleManager.cancel(true);
                     uploaderScheduleManager = null;
                 }
+                //关闭控制定时器
                 if(controlScheduleManager != null){
                     controlScheduleManager.cancel(true);
                     controlScheduleManager = null;
