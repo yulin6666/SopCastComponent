@@ -73,6 +73,8 @@ import java.text.DateFormat;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
@@ -119,6 +121,17 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
   private BeepManager beepManager;
   private AmbientLightManager ambientLightManager;
 
+  final Handler timeHandler = new Handler( ) {
+    public void handleMessage(Message msg) {
+      switch (msg.what) {
+        case 1://定时器
+          finish();
+          break;
+      }
+      super.handleMessage(msg);
+    }
+  };
+
   ViewfinderView getViewfinderView() {
     return viewfinderView;
   }
@@ -155,6 +168,17 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
     ambientLightManager = new AmbientLightManager(this);
 
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
+    Timer timer = new Timer();
+    TimerTask task = new TimerTask() {
+      @Override
+      public void run() {
+        Message message = new Message();
+        message.what = 1;
+        timeHandler.sendMessage(message);
+      }
+    };
+    timer.schedule(task,60000);//延迟60s执行
   }
 
   @Override
