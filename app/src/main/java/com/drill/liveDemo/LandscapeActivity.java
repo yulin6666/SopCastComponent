@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
@@ -109,7 +110,7 @@ public class LandscapeActivity extends Activity {
     private EditText msolution;
     private String mid;
     private String mresolution;
-    private boolean mProtait;
+//    private boolean mProtait;
     private String mPublishUrl;
 
     private EditText mipEditText;
@@ -246,15 +247,7 @@ public class LandscapeActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         //获取预设信息
-        SharedPreferences pref = getSharedPreferences("data", MODE_PRIVATE);
-        boolean PORTRAIT = pref.getBoolean("portrait", false);
-        if (!PORTRAIT) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-            setContentView(R.layout.activity_landscape);
-        } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            setContentView(R.layout.activity_portrait);
-        }
+        setContentView(R.layout.activity_landscape);
 
         initDeviceID();
         initGps();
@@ -269,7 +262,7 @@ public class LandscapeActivity extends Activity {
         loadLiveViewConfig();
 
         //初始化推流地址
-        pref = getSharedPreferences("data", MODE_PRIVATE);
+        SharedPreferences pref = getSharedPreferences("data", MODE_PRIVATE);
         mid = pref.getString("id", "");
         mPublishUrl = pref.getString("url", "rtmp://" + mip + "/live_540/");
         if (TextUtils.isEmpty(mid)) {
@@ -606,21 +599,21 @@ public class LandscapeActivity extends Activity {
                     mip = defaultIP;
                 }
 
-                if(!mOrientationSwitch.isChecked())
-                {
-                    mProtait = false;
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                }else{
-                    mProtait = true;
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                }
+//                if(!mOrientationSwitch.isChecked())
+//                {
+//                    mProtait = false;
+//                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+//                }else{
+//                    mProtait = true;
+//                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+//                }
 
                 //持久化
                 SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
                 editor.putString("id",mid);
                 editor.putString("ip",mip);
                 editor.putString("resolution",mresolution);
-                editor.putBoolean("portrait",mOrientationSwitch.isChecked());
+//                editor.putBoolean("portrait",mOrientationSwitch.isChecked());
                 editor.apply();
 
                 //这里需要重新导入数据
@@ -730,11 +723,11 @@ public class LandscapeActivity extends Activity {
         SopCastLog.isOpen(true);
         mLFLiveView.init();
         CameraConfiguration.Builder cameraBuilder = new CameraConfiguration.Builder();
-        if(getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
             cameraBuilder.setOrientation(CameraConfiguration.Orientation.LANDSCAPE);
         }
-        else if(getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+        else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
         {
             cameraBuilder.setOrientation(CameraConfiguration.Orientation.PORTRAIT);
         }
@@ -802,11 +795,10 @@ public class LandscapeActivity extends Activity {
 
     private void loadLiveViewConfig(){
         SharedPreferences pref = getSharedPreferences("data",MODE_PRIVATE);
-        mProtait = pref.getBoolean("portrait",false);
+//        mProtait = pref.getBoolean("portrait",false);
         mip = pref.getString("ip",defaultIP);
         mresolution  = pref.getString("resolution","540");
-
-        if(!mProtait)
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
             if(mresolution.compareTo("1080")==0){
                 VideoConfiguration.Builder videoBuilder = new VideoConfiguration.Builder();
