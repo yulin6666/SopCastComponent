@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -28,6 +29,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.view.WindowManager;
 import android.util.Log;
@@ -89,6 +91,7 @@ import static com.laifeng.sopcastsdk.constant.SopCastConstant.TAG;
 public class LandscapeActivity extends Activity {
     private CameraLivingView mLFLiveView;
     private ImageButton mScanButton;
+    private TextView mDebugLiveView;
     //    private MultiToggleImageButton mFlashBtn;
 //    private MultiToggleImageButton mFaceBtn;
 //    private MultiToggleImageButton midBtn;
@@ -120,7 +123,6 @@ public class LandscapeActivity extends Activity {
 
     private String mdeviceID;
     private String mStatus;
-    private boolean mstreamStatus;
     private String mNetWorkInfo;
     private int mbattery;
 
@@ -177,6 +179,10 @@ public class LandscapeActivity extends Activity {
                     break;
                 case 6://打开GPS开关
                     openGps((boolean) msg.obj);
+                    break;
+                case 7://livedebug信息
+                    mDebugLiveView.invalidate();
+                    mDebugLiveView.setText((String)msg.obj);
                     break;
                 default:
                     break;
@@ -241,13 +247,14 @@ public class LandscapeActivity extends Activity {
     private void init() {
 
         mStatus = "初始化";//当前状态
-        mstreamStatus = false;
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         //获取预设信息
         setContentView(R.layout.activity_landscape);
+
+        updateVersionCode(getApplicationContext());
 
         initDeviceID();
         initGps();
@@ -275,6 +282,22 @@ public class LandscapeActivity extends Activity {
 
         //资源上报池
         createUploadPool();
+    }
+
+
+    public String updateVersionCode(Context context) {
+        PackageManager packageManager = context.getPackageManager();
+        PackageInfo packageInfo;
+        String versionCode = "";
+        try {
+            packageInfo = packageManager.getPackageInfo(context.getPackageName(), 0);
+            versionCode = packageInfo.versionCode + "";
+            TextView versionView = findViewById(R.id.version_view);
+            versionView.setText("版本:"+versionCode);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return versionCode;
     }
 
     private void initGps() {
@@ -341,6 +364,7 @@ public class LandscapeActivity extends Activity {
     private void initViews() {
         mLFLiveView = (CameraLivingView) findViewById(R.id.liveView);
         mScanButton = (ImageButton)findViewById(R.id.id_scan_button);
+        mDebugLiveView = (TextView)findViewById(R.id.debug_live_view);
 //        mFlashBtn = (MultiToggleImageButton) findViewById(R.id.camera_flash_button);
 //        mFaceBtn = (MultiToggleImageButton) findViewById(R.id.camera_switch_button);
 //       midBtn = (MultiToggleImageButton) findViewById(R.id.id_button);
@@ -699,7 +723,7 @@ public class LandscapeActivity extends Activity {
 //        mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
         mLFLiveView.stop();
         isRecording = false;
-        mstreamStatus = false;
+        refreshLiveInfo();
     }
     private void startLive(){
         if(TextUtils.isEmpty(mid)) {
@@ -714,9 +738,22 @@ public class LandscapeActivity extends Activity {
         Toast.makeText(LandscapeActivity.this, "准备开始直播", Toast.LENGTH_SHORT).show();
 //        mRecordBtn.setBackgroundResource(R.mipmap.ic_record_stop);
         mRtmpSender.connect();
-        isRecording = true;
         mStatus = "正常";
-        mstreamStatus = true;
+    }
+
+    private void refreshLiveInfo(){
+        StringBuffer sb = new StringBuffer(256);
+        sb.append("状态: ");
+        if(isRecording){
+            sb.append("正在推流");
+        }else{
+            sb.append("停止推流");
+        }
+        sb.append("\n");
+        Message msg= new Message();
+        msg.what = 7;
+        msg.obj = sb.toString();
+        cameraHandler.sendMessage(msg);
     }
 
     private void initLiveView() {
@@ -781,14 +818,18 @@ public class LandscapeActivity extends Activity {
             @Override
             public void startError(int error) {
                 //直播失败
-                Toast.makeText(LandscapeActivity.this, "直播失败", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LandscapeActivity.this, "开播失败", Toast.LENGTH_SHORT).show();
                 mLFLiveView.stop();
+                isRecording = false;
+                refreshLiveInfo();
             }
 
             @Override
             public void startSuccess() {
                 //直播成功
                 Toast.makeText(LandscapeActivity.this, "开始直播,id号:"+mid+",地址:"+mPublishUrl, Toast.LENGTH_SHORT).show();
+                isRecording = true;
+                refreshLiveInfo();
             }
         });
     }
@@ -877,18 +918,20 @@ public class LandscapeActivity extends Activity {
         @Override
         public void onDisConnected() {
             mProgressConnecting.setVisibility(View.GONE);
-            Toast.makeText(LandscapeActivity.this, "fail to live", Toast.LENGTH_SHORT).show();
+            Toast.makeText(LandscapeActivity.this, "连接失败", Toast.LENGTH_SHORT).show();
 //            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
             mLFLiveView.stop();
             isRecording = false;
+            refreshLiveInfo();
         }
 
         @Override
         public void onPublishFail() {
             mProgressConnecting.setVisibility(View.GONE);
-//            Toast.makeText(LandscapeActivity.this, "fail to publish stream", Toast.LENGTH_SHORT).show();
+            Toast.makeText(LandscapeActivity.this, "发布失败", Toast.LENGTH_SHORT).show();
 //            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
             isRecording = false;
+            refreshLiveInfo();
         }
 
         @Override
@@ -963,7 +1006,6 @@ public class LandscapeActivity extends Activity {
         if(mLFLiveView!=null){
             mLFLiveView.stop();
             mLFLiveView.release();
-            mLFLiveView = null;
         }
 
         if(mGpsStarted){
@@ -1011,7 +1053,7 @@ public class LandscapeActivity extends Activity {
                 String uriAPI = "http://drli.urthe1.xyz/api/updateDevicesStatus?deviceID=" + mdeviceID+"&streamID="+mid;
                 if(!TextUtils.isEmpty(mStatus)){
                     uriAPI += String.format("&appStatus=%s",mStatus);
-                    uriAPI += String.format("&streamStatus=%b",mstreamStatus);
+                    uriAPI += String.format("&streamStatus=%b",isRecording);
                 }
                 if(!TextUtils.isEmpty(mNetWorkInfo)){
                     uriAPI += String.format("&networkType=%s",mNetWorkInfo);

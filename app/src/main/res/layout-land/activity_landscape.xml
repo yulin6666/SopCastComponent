@@ -15,35 +15,36 @@
     <com.drill.liveDemo.ui.TopRightWeightedLayout
         android:layout_width="75dp"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:visibility="visible"
         android:background="#4d000000"
         android:clipChildren="false"
         android:clipToPadding="false"
-        android:orientation="vertical">
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="visible">
 
         <!--<ImageButton-->
-            <!--android:id="@+id/backBtn"-->
-            <!--android:layout_width="30dp"-->
-            <!--android:layout_height="30dp"-->
-            <!--android:background="@mipmap/back" />-->
+        <!--android:id="@+id/backBtn"-->
+        <!--android:layout_width="30dp"-->
+        <!--android:layout_height="30dp"-->
+        <!--android:background="@mipmap/back" />-->
         <!--<com.drill.liveDemo.ui.MultiToggleImageButton-->
-            <!--android:id="@+id/camera_flash_button"-->
-            <!--style="@style/NiceOption"-->
-            <!--app:imageIds="@array/camera_flashmode_icons" />-->
+        <!--android:id="@+id/camera_flash_button"-->
+        <!--style="@style/NiceOption"-->
+        <!--app:imageIds="@array/camera_flashmode_icons" />-->
         <!--<com.drill.liveDemo.ui.MultiToggleImageButton-->
-            <!--android:id="@+id/camera_switch_button"-->
-            <!--style="@style/NiceOption"-->
-            <!--app:imageIds="@array/camera_id_icons" />-->
+        <!--android:id="@+id/camera_switch_button"-->
+        <!--style="@style/NiceOption"-->
+        <!--app:imageIds="@array/camera_id_icons" />-->
         <!--<com.drill.liveDemo.ui.MultiToggleImageButton-->
-            <!--android:id="@+id/id_button"-->
-            <!--style="@style/NiceOption"-->
-            <!--app:imageIds="@array/camera_render_icons" />-->
+        <!--android:id="@+id/id_button"-->
+        <!--style="@style/NiceOption"-->
+        <!--app:imageIds="@array/camera_render_icons" />-->
+
         <ImageButton
-        android:id="@+id/id_scan_button"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:background="@mipmap/scan" />
+            android:id="@+id/id_scan_button"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@mipmap/scan" />
     </com.drill.liveDemo.ui.TopRightWeightedLayout>
 
     <!--<LinearLayout-->
@@ -68,5 +69,16 @@
         android:layout_centerInParent="true"
         android:visibility="gone"/>
 
+    <TextView
+        android:id="@+id/version_view"
+        android:layout_width="60dp"
+        android:layout_height="20dp"
+        android:text=""/>
 
+    <TextView
+        android:id="@+id/debug_live_view"
+        android:layout_width="90dp"
+        android:layout_height="20dp"
+        android:layout_below="@+id/version_view"
+        android:text=""/>
 </RelativeLayout>
