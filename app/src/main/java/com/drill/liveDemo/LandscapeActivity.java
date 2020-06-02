@@ -150,6 +150,9 @@ public class LandscapeActivity extends Activity {
     private String maddr;//地址信息
     private String mDescribe;//描述信息
 
+    private String mScanContent;
+
+
     private Handler cameraHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -1325,6 +1328,54 @@ public class LandscapeActivity extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 111) {
+            if (data != null) {
+
+                mScanContent = data.getStringExtra(Intents.Scan.RESULT);
+                Log.d("",String.format("结果为:%s",mScanContent));
+
+                new Thread(new Runnable() {
+                    public void run() {
+                        String uriAPI = "http://drli.urthe1.xyz/api/newScanningMessage?deviceID=" + mdeviceID;
+                        HttpClient postClient = new DefaultHttpClient();
+                        HttpPost httpPost = new HttpPost(uriAPI);
+                        List<NameValuePair> params = new ArrayList<NameValuePair>();
+                        if(!TextUtils.isEmpty(mScanContent)){
+                            params.add(new BasicNameValuePair("content", mScanContent));
+                        }
+                        long time=System.currentTimeMillis();//long now = android.os.SystemClock.uptimeMillis();
+                        SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        Date d1=new Date(time);
+                        String t1=format.format(d1);
+                        params.add(new BasicNameValuePair("scanningTime", t1));
+
+                        UrlEncodedFormEntity entity;
+                        HttpResponse response;
+                        try {
+                            entity = new UrlEncodedFormEntity(params, "utf-8");
+                            httpPost.setEntity(entity);
+                            response = postClient.execute(httpPost);
+
+                            if (response.getStatusLine().getStatusCode() == 200) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        // 在这里更新UI
+                                        Toast.makeText(LandscapeActivity.this, "二维码扫描成功，请在后台查收", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        } catch (ClientProtocolException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        ;
+                    }
+                }).start();
+            }
             init();
         }
     };
