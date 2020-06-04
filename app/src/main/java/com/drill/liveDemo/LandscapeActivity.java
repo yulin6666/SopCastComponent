@@ -101,7 +101,7 @@ public class LandscapeActivity extends Activity {
     private GestureDetector mGestureDetector;
     private GrayEffect mGrayEffect;
     private NullEffect mNullEffect;
-//    private ImageButton mRecordBtn;
+    //    private ImageButton mRecordBtn;
     private boolean isGray;
     private boolean isRecording;
     private ProgressBar mProgressConnecting;
@@ -216,6 +216,7 @@ public class LandscapeActivity extends Activity {
                 //说明已经获取到摄像头权限了
                 Log.i("MainActivity", "已经获取了权限");
                 init();
+
             }
         } else {
 //这个说明系统版本在6.0之下，不需要动态获取权限。
@@ -293,6 +294,8 @@ public class LandscapeActivity extends Activity {
 
         //资源上报池
         createUploadPool();
+        Intent startIntent = new Intent(this, BackgroundService.class);
+        startService(startIntent);
     }
 
 
@@ -409,93 +412,93 @@ public class LandscapeActivity extends Activity {
                 //解析json文件
                 Log.d("camera",jsonStr);
                 try {
-                        JSONArray jsonArray = new JSONArray(jsonStr);
-                        for(int i=0;i<jsonArray.length();i++) {
-                            JSONObject jsonObject=(JSONObject)jsonArray.get(i);
-                            String id=jsonObject.getString("deviceID");
-                            if(id.compareTo(mdeviceID)==0){//通过设备标识符找到
-                                //摄像头控制
-                                int facing=jsonObject.getInt("cameraPosition");
-                                int cameraNow = mLFLiveView.getCameraData().cameraFacing;
-                                Log.d("camera",String.format("cameraid:%d",cameraNow));
-                                if(facing != cameraNow && facing!=0){
-                                    cameraHandler.sendEmptyMessage(0);
-                                }
-                                //推流状态
-                                boolean cRecord = jsonObject.getBoolean("pushStatus");
-                                if(cRecord != isRecording)
-                                    cameraHandler.sendEmptyMessage(1);
-                                //车牌号
-                                if(!jsonObject.isNull("streamID")){
-                                    String carId = jsonObject.getString("streamID");
-                                    if(!carId.equals(mid)){
-                                        Message msg= new Message();
-                                        msg.what = 3;
-                                        msg.obj = carId;
-                                        cameraHandler.sendMessage(msg);
-                                    }
-                                }
-                                //清晰度
-                                if(!jsonObject.isNull("streamDefinition")){
-                                    String resolution = jsonObject.getString("streamDefinition");
-                                    if(resolution.compareTo("540P")==0){
-                                        resolution = "540";
-                                    }else if(resolution.compareTo(" 720P")==0){
-                                        resolution = "720";
-                                    }else if(resolution.compareTo(" 1080P")==0){
-                                        resolution = "1080";
-                                    }
-                                    if(!resolution.equals(mresolution)){
-                                        Message msg= new Message();
-                                        msg.what = 4;
-                                        msg.obj = resolution;
-                                        cameraHandler.sendMessage(msg);
-                                    }
-                                }
-                                //推流地址
-                                if(!jsonObject.isNull("ip")){
-                                    String ip = jsonObject.getString("ip");
-                                    if(!ip.equals(mip)){
-                                        Message msg= new Message();
-                                        msg.what = 5;
-                                        msg.obj = ip;
-                                        cameraHandler.sendMessage(msg);
-                                    }
-                                }
-                                //是否打开GPS上报
-                                if(!jsonObject.isNull("gpsEnable")){
-                                    boolean gpsEnable = jsonObject.getBoolean("gpsEnable");
-                                    if(mGpsStarted != gpsEnable){
-                                        Message msg= new Message();
-                                        msg.what = 6;
-                                        msg.obj = gpsEnable;
-                                        cameraHandler.sendMessage(msg);
-                                    }
-                                }
-                                break;
+                    JSONArray jsonArray = new JSONArray(jsonStr);
+                    for(int i=0;i<jsonArray.length();i++) {
+                        JSONObject jsonObject=(JSONObject)jsonArray.get(i);
+                        String id=jsonObject.getString("deviceID");
+                        if(id.compareTo(mdeviceID)==0){//通过设备标识符找到
+                            //摄像头控制
+                            int facing=jsonObject.getInt("cameraPosition");
+                            int cameraNow = mLFLiveView.getCameraData().cameraFacing;
+                            Log.d("camera",String.format("cameraid:%d",cameraNow));
+                            if(facing != cameraNow && facing!=0){
+                                cameraHandler.sendEmptyMessage(0);
                             }
+                            //推流状态
+                            boolean cRecord = jsonObject.getBoolean("pushStatus");
+                            if(cRecord != isRecording)
+                                cameraHandler.sendEmptyMessage(1);
+                            //车牌号
+                            if(!jsonObject.isNull("streamID")){
+                                String carId = jsonObject.getString("streamID");
+                                if(!carId.equals(mid)){
+                                    Message msg= new Message();
+                                    msg.what = 3;
+                                    msg.obj = carId;
+                                    cameraHandler.sendMessage(msg);
+                                }
+                            }
+                            //清晰度
+                            if(!jsonObject.isNull("streamDefinition")){
+                                String resolution = jsonObject.getString("streamDefinition");
+                                if(resolution.compareTo("540P")==0){
+                                    resolution = "540";
+                                }else if(resolution.compareTo(" 720P")==0){
+                                    resolution = "720";
+                                }else if(resolution.compareTo(" 1080P")==0){
+                                    resolution = "1080";
+                                }
+                                if(!resolution.equals(mresolution)){
+                                    Message msg= new Message();
+                                    msg.what = 4;
+                                    msg.obj = resolution;
+                                    cameraHandler.sendMessage(msg);
+                                }
+                            }
+                            //推流地址
+                            if(!jsonObject.isNull("ip")){
+                                String ip = jsonObject.getString("ip");
+                                if(!ip.equals(mip)){
+                                    Message msg= new Message();
+                                    msg.what = 5;
+                                    msg.obj = ip;
+                                    cameraHandler.sendMessage(msg);
+                                }
+                            }
+                            //是否打开GPS上报
+                            if(!jsonObject.isNull("gpsEnable")){
+                                boolean gpsEnable = jsonObject.getBoolean("gpsEnable");
+                                if(mGpsStarted != gpsEnable){
+                                    Message msg= new Message();
+                                    msg.what = 6;
+                                    msg.obj = gpsEnable;
+                                    cameraHandler.sendMessage(msg);
+                                }
+                            }
+                            break;
                         }
-                    }catch (JSONException e) {
+                    }
+                }catch (JSONException e) {
                     e.printStackTrace();
                 }
                 //全局控制接口
                 jsonStr = httpGet("http://drli.urthe1.xyz/api/settings");
                 try {
-                        JSONObject jsonObject=new JSONObject(jsonStr);
-                        //间隔时间
-                        if(!jsonObject.isNull("interval")) {
-                            int reportInterval = jsonObject.getInt("interval");
-                            if (reportInterval != mInterval) {
-                                Message msg = new Message();
-                                msg.what = 2;
-                                msg.arg1 = reportInterval;
-                                cameraHandler.sendMessage(msg);
-                            }
+                    JSONObject jsonObject=new JSONObject(jsonStr);
+                    //间隔时间
+                    if(!jsonObject.isNull("interval")) {
+                        int reportInterval = jsonObject.getInt("interval");
+                        if (reportInterval != mInterval) {
+                            Message msg = new Message();
+                            msg.what = 2;
+                            msg.arg1 = reportInterval;
+                            cameraHandler.sendMessage(msg);
                         }
-                    }catch (JSONException e) {
+                    }
+                }catch (JSONException e) {
                     e.printStackTrace();
                 }
-         }
+            }
         };
 
         controlScheduleManager = controlScheduleExecutor.scheduleAtFixedRate(controlTimeTask, 1, 3, TimeUnit.SECONDS);
