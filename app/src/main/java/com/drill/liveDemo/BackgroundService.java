@@ -41,11 +41,11 @@ public class BackgroundService extends CameraService {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID).
-                setContentTitle("相机守护正在运行").
-                setContentText("别点我").
+//                setContentTitle("相机守护正在运行").
+//                setContentText("别点我").
                 setWhen(System.currentTimeMillis()).
-                setSmallIcon(R.mipmap.ic_launcher).
-                setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher)).
+//                setSmallIcon(R.mipmap.ic_launcher).
+//                setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher)).
                 setContentIntent(pendingIntent).build();
         startForeground(1, notification);
 
