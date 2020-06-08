@@ -189,6 +189,8 @@ public class LandscapeActivity extends Activity {
                     mDebugLiveView.invalidate();
                     mDebugLiveView.setText((String)msg.obj);
                     break;
+                case 8://切换横竖屏
+                    changeProtrait((boolean)msg.obj);
                 default:
                     break;
             }
@@ -467,6 +469,17 @@ public class LandscapeActivity extends Activity {
                                     cameraHandler.sendMessage(msg);
                                 }
                             }
+                            //是否切换横竖屏
+                            if(!jsonObject.isNull("isLandscape")){
+                                boolean landscape = jsonObject.getBoolean("isLandscape");
+                                boolean protait = !landscape;
+                                if(mProtait != protait){
+                                    Message msg= new Message();
+                                    msg.what = 8;
+                                    msg.obj = landscape;
+                                    cameraHandler.sendMessage(msg);
+                                }
+                            }
                             break;
                         }
                     }
@@ -715,6 +728,21 @@ public class LandscapeActivity extends Activity {
         Toast.makeText(LandscapeActivity.this, "ip改为:"+mip, Toast.LENGTH_SHORT).show();
         SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
         editor.putString("ip",mip);
+        editor.apply();
+    }
+    private void changeProtrait(boolean landscape){
+        mProtait = !landscape;
+        if(mProtait){
+            Toast.makeText(LandscapeActivity.this, "切换为竖屏", Toast.LENGTH_SHORT).show();
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+        else{
+            Toast.makeText(LandscapeActivity.this, "切换为横屏", Toast.LENGTH_SHORT).show();
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+
+        SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
+        editor.putBoolean("portrait",mProtait);
         editor.apply();
     }
     private void openGps(boolean gpsEnable){
