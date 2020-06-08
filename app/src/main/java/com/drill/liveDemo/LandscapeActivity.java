@@ -175,7 +175,6 @@ public class LandscapeActivity extends Activity {
                     break;
                 case 4://清晰度
                     changeResolution((String) msg.obj);
-                    loadLiveViewConfig();
                     break;
                 case 5://修改IP
                     changeIp((String) msg.obj);
@@ -277,17 +276,17 @@ public class LandscapeActivity extends Activity {
         initViews();
         initListeners();
         initLiveView();
-        initRtmpAddressDialog();
-        loadLiveViewConfig();
+//        initRtmpAddressDialog();
+//        loadLiveViewConfig();
 
         //初始化推流地址
-        pref = getSharedPreferences("data", MODE_PRIVATE);
-        mid = pref.getString("id", "");
-        mPublishUrl = pref.getString("url", "rtmp://" + mip + "/live_540/");
-        if (TextUtils.isEmpty(mid)) {
-            mUploadDialog.setCanceledOnTouchOutside(false);
-            mUploadDialog.show();
-        }
+//        pref = getSharedPreferences("data", MODE_PRIVATE);
+//        mid = pref.getString("id", "");
+//        mPublishUrl = pref.getString("url", "rtmp://" + mip + "/live_540/");
+//        if (TextUtils.isEmpty(mid)) {
+//            mUploadDialog.setCanceledOnTouchOutside(false);
+//            mUploadDialog.show();
+//        }
 
         //根据远端状态来判断
         createSchedulePool();
@@ -455,16 +454,6 @@ public class LandscapeActivity extends Activity {
                                     cameraHandler.sendMessage(msg);
                                 }
                             }
-                            //推流地址
-                            if(!jsonObject.isNull("ip")){
-                                String ip = jsonObject.getString("ip");
-                                if(!ip.equals(mip)){
-                                    Message msg= new Message();
-                                    msg.what = 5;
-                                    msg.obj = ip;
-                                    cameraHandler.sendMessage(msg);
-                                }
-                            }
                             //是否打开GPS上报
                             if(!jsonObject.isNull("gpsEnable")){
                                 boolean gpsEnable = jsonObject.getBoolean("gpsEnable");
@@ -492,6 +481,16 @@ public class LandscapeActivity extends Activity {
                             Message msg = new Message();
                             msg.what = 2;
                             msg.arg1 = reportInterval;
+                            cameraHandler.sendMessage(msg);
+                        }
+                    }
+                    //推流地址
+                    if(!jsonObject.isNull("ip")){
+                        String ip = jsonObject.getString("ip");
+                        if(!ip.equals(mip)){
+                            Message msg= new Message();
+                            msg.what = 5;
+                            msg.obj = ip;
                             cameraHandler.sendMessage(msg);
                         }
                     }
@@ -604,86 +603,86 @@ public class LandscapeActivity extends Activity {
 //        });
     }
 
-    private void initRtmpAddressDialog() {
-        LayoutInflater inflater = getLayoutInflater();
-        View playView = inflater.inflate(R.layout.address_dialog,(ViewGroup) findViewById(R.id.dialog));
-        mAddressET = (EditText) playView.findViewById(R.id.address);
-        msolution = (EditText) playView.findViewById(R.id.resolution);
-        mOrientationSwitch = (Switch) playView.findViewById(R.id.switchOrientation);
-        mipEditText = (EditText) playView.findViewById(R.id.ip);
-        Button okBtn = (Button) playView.findViewById(R.id.ok);
-        Button cancelBtn = (Button) playView.findViewById(R.id.cancel);
-        AlertDialog.Builder uploadBuilder = new AlertDialog.Builder(this);
-        uploadBuilder.setTitle("请输入车号ID:");
-        uploadBuilder.setView(playView);
-        mUploadDialog = uploadBuilder.create();
-
-        okBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mid = mAddressET.getText().toString();
-                if(TextUtils.isEmpty(mid)) {
-                    //Toast.makeText(LandscapeActivity.this, "车号ID不为空!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                mresolution = msolution.getText().toString();
-                if(TextUtils.isEmpty(mresolution)) {
-                    mresolution = "540";
-                }
-
-                mip = mipEditText.getText().toString();
-                if(TextUtils.isEmpty(mip)) {
-                    mip = defaultIP;
-                }
-
-                if(!mOrientationSwitch.isChecked())
-                {
-                    mProtait = false;
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                }else{
-                    mProtait = true;
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                }
-
-                //持久化
-                SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
-                editor.putString("id",mid);
-                editor.putString("ip",mip);
-                editor.putString("resolution",mresolution);
-                editor.putBoolean("portrait",mOrientationSwitch.isChecked());
-                editor.apply();
-
-                //这里需要重新导入数据
-                loadLiveViewConfig();
-
-                editor = getSharedPreferences("data",MODE_PRIVATE).edit();
-                editor.putString("url",mPublishUrl);
-                editor.apply();
-
-                LandscapeActivity.this.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Log.i("Dialog","dialog dismiss");
-                        mUploadDialog.dismiss();
-                    }
-                });
-            }
-        });
-        cancelBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LandscapeActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.i("Dialog","dialog dismiss");
-                        mUploadDialog.dismiss();
-                    }
-                });                //开启状态查询
-            }
-        });
-    }
+//    private void initRtmpAddressDialog() {
+//        LayoutInflater inflater = getLayoutInflater();
+//        View playView = inflater.inflate(R.layout.address_dialog,(ViewGroup) findViewById(R.id.dialog));
+//        mAddressET = (EditText) playView.findViewById(R.id.address);
+//        msolution = (EditText) playView.findViewById(R.id.resolution);
+//        mOrientationSwitch = (Switch) playView.findViewById(R.id.switchOrientation);
+//        mipEditText = (EditText) playView.findViewById(R.id.ip);
+//        Button okBtn = (Button) playView.findViewById(R.id.ok);
+//        Button cancelBtn = (Button) playView.findViewById(R.id.cancel);
+//        AlertDialog.Builder uploadBuilder = new AlertDialog.Builder(this);
+//        uploadBuilder.setTitle("请输入车号ID:");
+//        uploadBuilder.setView(playView);
+//        mUploadDialog = uploadBuilder.create();
+//
+//        okBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                mid = mAddressET.getText().toString();
+//                if(TextUtils.isEmpty(mid)) {
+//                    //Toast.makeText(LandscapeActivity.this, "车号ID不为空!", Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
+//
+//                mresolution = msolution.getText().toString();
+//                if(TextUtils.isEmpty(mresolution)) {
+//                    mresolution = "540";
+//                }
+//
+//                mip = mipEditText.getText().toString();
+//                if(TextUtils.isEmpty(mip)) {
+//                    mip = defaultIP;
+//                }
+//
+//                if(!mOrientationSwitch.isChecked())
+//                {
+//                    mProtait = false;
+//                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+//                }else{
+//                    mProtait = true;
+//                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+//                }
+//
+//                //持久化
+//                SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
+//                editor.putString("id",mid);
+//                editor.putString("ip",mip);
+//                editor.putString("resolution",mresolution);
+//                editor.putBoolean("portrait",mOrientationSwitch.isChecked());
+//                editor.apply();
+//
+//                //这里需要重新导入数据
+//                loadLiveViewConfig();
+//
+//                editor = getSharedPreferences("data",MODE_PRIVATE).edit();
+//                editor.putString("url",mPublishUrl);
+//                editor.apply();
+//
+//                LandscapeActivity.this.runOnUiThread(new Runnable() {
+//
+//                    @Override
+//                    public void run() {
+//                        Log.i("Dialog","dialog dismiss");
+//                        mUploadDialog.dismiss();
+//                    }
+//                });
+//            }
+//        });
+//        cancelBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                LandscapeActivity.this.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Log.i("Dialog","dialog dismiss");
+//                        mUploadDialog.dismiss();
+//                    }
+//                });                //开启状态查询
+//            }
+//        });
+//    }
 
     private void changeInterval(int newValue){
         mInterval = newValue;
@@ -699,20 +698,20 @@ public class LandscapeActivity extends Activity {
         SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
         editor.putString("id",mid);
         editor.apply();
-        Toast.makeText(LandscapeActivity.this, "车牌ID修改为:"+mid, Toast.LENGTH_SHORT).show();
+        Toast.makeText(LandscapeActivity.this, "车牌ID改为:"+mid, Toast.LENGTH_SHORT).show();
     }
     private void changeResolution(String resolution){
         mresolution = resolution;
-        Toast.makeText(LandscapeActivity.this, "清晰度修改为:"+mresolution, Toast.LENGTH_SHORT).show();
+        Toast.makeText(LandscapeActivity.this, "清晰度改为:"+mresolution, Toast.LENGTH_SHORT).show();
         SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
         editor.putString("resolution",mresolution);
         editor.apply();
     }
     private void changeIp(String ip){
         mip = ip;
-        Toast.makeText(LandscapeActivity.this, "ip修改为:"+mip, Toast.LENGTH_SHORT).show();
+        Toast.makeText(LandscapeActivity.this, "ip改为:"+mip, Toast.LENGTH_SHORT).show();
         SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
-        editor.putString("ip",mresolution);
+        editor.putString("ip",mip);
         editor.apply();
     }
     private void openGps(boolean gpsEnable){
@@ -740,13 +739,27 @@ public class LandscapeActivity extends Activity {
         refreshLiveInfo();
     }
     private void startLive(){
+        SharedPreferences pref = getSharedPreferences("data",MODE_PRIVATE);
+        mProtait = pref.getBoolean("portrait",false);
+        mid = pref.getString("id","");
+        mip = pref.getString("ip","");
+        mresolution  = pref.getString("resolution","");
         if(TextUtils.isEmpty(mid)) {
-            Toast.makeText(LandscapeActivity.this, "mid未赋值，无法推流", Toast.LENGTH_SHORT).show();
+            Toast.makeText(LandscapeActivity.this, "mid未赋值，等待...", Toast.LENGTH_SHORT).show();
             return;
         }
+        if(TextUtils.isEmpty(mip)){
+            Toast.makeText(LandscapeActivity.this, "推流地址未赋值，等待...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if(TextUtils.isEmpty(mresolution)){
+            Toast.makeText(LandscapeActivity.this, "清晰度未赋值，等待...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        loadLiveViewConfig();
         String uploadUrl = mPublishUrl+mid;
         Log.i("mid","url:"+uploadUrl);
-        //Toast.makeText(LandscapeActivity.this,uploadUrl, Toast.LENGTH_SHORT).show();
         mRtmpSender.setAddress(uploadUrl);
         mProgressConnecting.setVisibility(View.VISIBLE);
         Toast.makeText(LandscapeActivity.this, "准备开始直播", Toast.LENGTH_SHORT).show();
@@ -760,9 +773,10 @@ public class LandscapeActivity extends Activity {
         sb.append("状态: ");
         if(isRecording){
             sb.append("正在推流");
-        }else{
+        }else {
             sb.append("停止推流");
         }
+
         sb.append("\n");
         Message msg= new Message();
         msg.what = 7;
@@ -849,10 +863,6 @@ public class LandscapeActivity extends Activity {
     }
 
     private void loadLiveViewConfig(){
-        SharedPreferences pref = getSharedPreferences("data",MODE_PRIVATE);
-        mProtait = pref.getBoolean("portrait",false);
-        mip = pref.getString("ip",defaultIP);
-        mresolution  = pref.getString("resolution","540");
         if(!mProtait)
         {
             if(mresolution.compareTo("1080")==0){
