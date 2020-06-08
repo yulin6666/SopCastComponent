@@ -172,12 +172,15 @@ public class LandscapeActivity extends Activity {
                     break;
                 case 3://车牌号
                     changeCarId((String) msg.obj);
+                    restartLive();//自动重启
                     break;
                 case 4://清晰度
                     changeResolution((String) msg.obj);
+                    restartLive();//自动重启
                     break;
                 case 5://修改IP
                     changeIp((String) msg.obj);
+                    restartLive();//自动重启
                     break;
                 case 6://打开GPS开关
                     openGps((boolean) msg.obj);
@@ -768,6 +771,22 @@ public class LandscapeActivity extends Activity {
         mStatus = "正常";
     }
 
+    private void restartLive(){
+
+        if(isRecording) {
+            stopLive();
+
+            new Handler(new Handler.Callback() {
+                @Override
+                public boolean handleMessage(Message msg) {
+                    startLive();
+                    return true;
+                }
+
+                ;
+            }).sendEmptyMessageDelayed(0, 1000);//表示延迟1秒发送任务
+        }
+    }
     private void refreshLiveInfo(){
         StringBuffer sb = new StringBuffer(256);
         sb.append("状态: ");
