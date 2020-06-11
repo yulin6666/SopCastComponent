@@ -1121,7 +1121,7 @@ public class LandscapeActivity extends Activity {
     {
         new Thread(new Runnable() {
             public void run() {
-                String uriAPI = "http://drli.urthe1.xyz/api/updateDevicesStatus?deviceID=" + mdeviceID+"&streamID="+mid;
+                String uriAPI = "http://drli.urthe1.xyz/api/updateDevicesStatus?deviceID=" + mdeviceID;
                 if(!TextUtils.isEmpty(mStatus)){
                     uriAPI += String.format("&appStatus=%s",mStatus);
                     uriAPI += String.format("&streamStatus=%b",isRecording);
