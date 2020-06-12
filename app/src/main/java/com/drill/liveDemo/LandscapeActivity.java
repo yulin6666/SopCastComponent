@@ -516,7 +516,7 @@ public class LandscapeActivity extends Activity {
             }
         };
 
-        controlScheduleManager = controlScheduleExecutor.scheduleAtFixedRate(controlTimeTask, 1, 3, TimeUnit.SECONDS);
+        controlScheduleManager = controlScheduleExecutor.scheduleAtFixedRate(controlTimeTask, 1, 8, TimeUnit.SECONDS);
 
     }
 
