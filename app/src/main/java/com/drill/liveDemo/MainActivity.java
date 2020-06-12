@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
          * 设备ID号
          */
         TelephonyManager tm = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-        mdeviceID = tm.getDeviceId().toString();
+        mdeviceID = tm.getMeid().toString();
         Log.d(TAG,String.format("deviceID:%s",mdeviceID));
 
         //获取电量信息
