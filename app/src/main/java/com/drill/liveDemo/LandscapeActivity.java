@@ -516,7 +516,7 @@ public class LandscapeActivity extends Activity {
             }
         };
 
-        controlScheduleManager = controlScheduleExecutor.scheduleAtFixedRate(controlTimeTask, 1, 8, TimeUnit.SECONDS);
+        controlScheduleManager = controlScheduleExecutor.scheduleAtFixedRate(controlTimeTask, 1, 3, TimeUnit.SECONDS);
 
     }
 
@@ -812,7 +812,7 @@ public class LandscapeActivity extends Activity {
                 }
 
                 ;
-            }).sendEmptyMessageDelayed(0, 1000);//表示延迟1秒发送任务
+            }).sendEmptyMessageDelayed(0, 3000);//表示延迟1秒发送任务
         }
     }
     private void refreshLiveInfo(){
