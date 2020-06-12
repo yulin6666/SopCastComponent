@@ -1379,7 +1379,7 @@ public class LandscapeActivity extends Activity {
                 }
             }
             Log.d("GPS",sb.toString());
-            mDescribe = sb.toString();
+            //mDescribe = sb.toString();
             //sendRefreshMessage();
         }
     };
