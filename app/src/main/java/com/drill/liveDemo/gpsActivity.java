@@ -518,8 +518,8 @@ public class gpsActivity extends AppCompatActivity {
                 }
             }
             Log.d("GPS",sb.toString());
-            mDescribe = sb.toString();
-            sendRefreshMessage();
+//            mDescribe = sb.toString();
+//            sendRefreshMessage();
         }
     };
 
