@@ -804,15 +804,15 @@ public class LandscapeActivity extends Activity {
         if(isRecording) {
             stopLive();
 
-            new Handler(new Handler.Callback() {
-                @Override
-                public boolean handleMessage(Message msg) {
-                    startLive();
-                    return true;
-                }
-
-                ;
-            }).sendEmptyMessageDelayed(0, 3000);//表示延迟1秒发送任务
+//            new Handler(new Handler.Callback() {
+//                @Override
+//                public boolean handleMessage(Message msg) {
+//                    startLive();
+//                    return true;
+//                }
+//
+//                ;
+//            }).sendEmptyMessageDelayed(0, 5000);//表示延迟5秒发送任务
         }
     }
     private void refreshLiveInfo(){

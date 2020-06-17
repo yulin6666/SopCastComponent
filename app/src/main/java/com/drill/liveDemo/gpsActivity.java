@@ -217,7 +217,7 @@ public class gpsActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-        }, 1, 3, TimeUnit.SECONDS);
+        }, 1, 10, TimeUnit.SECONDS);
     }
 
     private void changeInterval(int newValue){
