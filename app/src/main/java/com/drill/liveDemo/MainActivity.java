@@ -48,6 +48,7 @@ import java.util.List;
 import static android.net.NetworkInfo.State.CONNECTED;
 import static com.laifeng.sopcastsdk.constant.SopCastConstant.TAG;
 
+
 public class MainActivity extends AppCompatActivity {
 
     private String mdeviceID;

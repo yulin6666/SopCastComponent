@@ -70,6 +70,8 @@ import org.json.JSONObject;
 import android.os.Handler;
 import android.os.Message;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -152,6 +154,10 @@ public class LandscapeActivity extends Activity {
 
     private String mScanContent;
 
+    private int triggerNum;
+
+    final boolean enableTimerTirgger = false;
+    final int TotalTriggerNum = 3;
 
     private Handler cameraHandler = new Handler() {
         @Override
@@ -300,8 +306,60 @@ public class LandscapeActivity extends Activity {
         createUploadPool();
         Intent startIntent = new Intent(this, BackgroundService.class);
         startService(startIntent);
+
+        if(enableTimerTirgger){
+            triggerNum = 0;
+            startTiggerTimer();
+        }
     }
 
+    private void startTiggerTimer(){
+
+        new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message msg) {
+                if(triggerNum < TotalTriggerNum){
+                    Toast.makeText(LandscapeActivity.this, "系统故障，停止直播!", Toast.LENGTH_SHORT).show();
+                    //关闭推流
+                    if(isRecording)
+                        stopLive();
+
+                    //关闭上报定时器
+                    if (uploaderScheduleManager != null)
+                    {
+                        uploaderScheduleManager.cancel(true);
+                        uploaderScheduleManager = null;
+                    }
+                    //关闭控制定时器
+                    if(controlScheduleManager != null){
+                        controlScheduleManager.cancel(true);
+                        controlScheduleManager = null;
+                    }
+
+                    new Handler(new Handler.Callback() {
+                        @Override
+                        public boolean handleMessage(Message msg) {
+                            Toast.makeText(LandscapeActivity.this, "恢复直播!", Toast.LENGTH_SHORT).show();
+                            //重新创建控制池
+                            createSchedulePool();
+                            //重新创建上报池
+                            createUploadPool();
+                            //重新开启计数器
+                            startTiggerTimer();
+                            return true;
+                        }
+
+                        ;
+                    }).sendEmptyMessageDelayed(0, 30000);//30s后恢复
+                }
+
+                triggerNum++;
+                return true;
+            };
+        }).sendEmptyMessageDelayed(0, 30000);//60s后执行stop
+
+
+    }
 
     public String updateVersionCode(Context context) {
         PackageManager packageManager = context.getPackageManager();
