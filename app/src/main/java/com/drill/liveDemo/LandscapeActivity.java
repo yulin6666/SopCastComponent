@@ -19,6 +19,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -154,10 +155,12 @@ public class LandscapeActivity extends Activity {
 
     private String mScanContent;
 
-    private int triggerNum;
+    private int currentTriggerNum = 0;
 
-    final boolean enableTimerTirgger = false;
-    final int TotalTriggerNum = 3;
+    private Boolean triggerEnable = false;
+    private int totalCount = 3;
+    private int recoveryDuration = 30;
+    private int totalDuration = 60;
 
     private Handler cameraHandler = new Handler() {
         @Override
@@ -197,6 +200,10 @@ public class LandscapeActivity extends Activity {
                     break;
                 case 8://切换横竖屏
                     changeProtrait((boolean)msg.obj);
+                    break;
+                case 9://打开阻断器
+                    openStopTimer((boolean)msg.obj);
+                    break;
                 default:
                     break;
             }
@@ -307,10 +314,7 @@ public class LandscapeActivity extends Activity {
         Intent startIntent = new Intent(this, BackgroundService.class);
         startService(startIntent);
 
-        if(enableTimerTirgger){
-            triggerNum = 0;
-            startTiggerTimer();
-        }
+
     }
 
     private void startTiggerTimer(){
@@ -318,7 +322,7 @@ public class LandscapeActivity extends Activity {
         new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
-                if(triggerNum < TotalTriggerNum){
+                if(currentTriggerNum < totalCount){
                     Toast.makeText(LandscapeActivity.this, "系统故障，停止直播!", Toast.LENGTH_SHORT).show();
                     //关闭推流
                     if(isRecording)
@@ -350,13 +354,13 @@ public class LandscapeActivity extends Activity {
                         }
 
                         ;
-                    }).sendEmptyMessageDelayed(0, 30000);//30s后恢复
+                    }).sendEmptyMessageDelayed(0, recoveryDuration*1000);
                 }
 
-                triggerNum++;
+                currentTriggerNum++;
                 return true;
             };
-        }).sendEmptyMessageDelayed(0, 30000);//60s后执行stop
+        }).sendEmptyMessageDelayed(0, totalDuration*1000);
 
 
     }
@@ -469,8 +473,15 @@ public class LandscapeActivity extends Activity {
 
             @Override
             public void run() {
-                //单设备控制接口
-                String jsonStr = httpGet("http://drli.urthe1.xyz/api/getClientStatus");
+                DisplayMetrics dm = getApplicationContext().getResources().getDisplayMetrics();
+                int height= dm.heightPixels;
+                int width= dm.widthPixels;
+                String jsonStr;
+                if(height == 240 && width ==320){
+                    jsonStr = httpGet("http://drli.urthe1.xyz/api/getClientStatus?deviceType=1");
+                }else{
+                    jsonStr = httpGet("http://drli.urthe1.xyz/api/getClientStatus");
+                }
                 //解析json文件
                 Log.d("camera",jsonStr);
                 try {
@@ -535,6 +546,22 @@ public class LandscapeActivity extends Activity {
                                     Message msg= new Message();
                                     msg.what = 8;
                                     msg.obj = landscape;
+                                    cameraHandler.sendMessage(msg);
+                                }
+                            }
+                            //是否触发阻断器
+                            if(!jsonObject.isNull("switcher")&&
+                                    !jsonObject.isNull("totalDuration") &&
+                                    !jsonObject.isNull("recoveryDuration") &&
+                                    !jsonObject.isNull("totalCount")){
+                                boolean enableTrigger = jsonObject.getBoolean("switcher");
+                                totalDuration = jsonObject.getInt("totalDuration");
+                                recoveryDuration = jsonObject.getInt("recoveryDuration");
+                                totalCount = jsonObject.getInt("totalCount");
+                                if(enableTrigger != triggerEnable){
+                                    Message msg= new Message();
+                                    msg.what = 9;
+                                    msg.obj = enableTrigger;
                                     cameraHandler.sendMessage(msg);
                                 }
                             }
@@ -802,6 +829,12 @@ public class LandscapeActivity extends Activity {
         SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
         editor.putBoolean("portrait",mProtait);
         editor.apply();
+    }
+    private void openStopTimer(boolean enable){
+        triggerEnable = enable;
+        if(triggerEnable){
+            startTiggerTimer();
+        }
     }
     private void openGps(boolean gpsEnable){
         if(gpsEnable) {
@@ -1201,6 +1234,15 @@ public class LandscapeActivity extends Activity {
                 }
                 if(mDirection > 0){
                     uriAPI += String.format("&direction=%f",mDirection);
+                }
+
+                DisplayMetrics dm = getApplicationContext().getResources().getDisplayMetrics();
+                int height= dm.heightPixels;
+                int width= dm.widthPixels;
+                if(height == 240 && width ==320){
+                    uriAPI += String.format("&deviceType=%d",1);
+                }else{
+                    uriAPI += String.format("&deviceType=%d",0);
                 }
 
                 HttpClient postClient = new DefaultHttpClient();
