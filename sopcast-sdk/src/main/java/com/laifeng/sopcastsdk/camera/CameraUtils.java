@@ -5,6 +5,7 @@ import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
+import android.util.DisplayMetrics;
 
 import com.laifeng.sopcastsdk.configuration.CameraConfiguration;
 import com.laifeng.sopcastsdk.constant.SopCastConstant;
@@ -65,7 +66,7 @@ public class CameraUtils {
         setPreviewFps(camera, configuration.fps, parameters);
         setPreviewSize(camera, cameraData, cameraWidth, cameraHeight, parameters);
         cameraData.hasLight = supportFlash(camera);
-        setOrientation(cameraData, isLandscape, camera);
+        setOrientation(cameraData, isLandscape, camera,configuration);
         setFocusMode(camera, cameraData, isTouchMode);
     }
 
@@ -137,11 +138,16 @@ public class CameraUtils {
         }
     }
 
-    private static void setOrientation(CameraData cameraData, boolean isLandscape, Camera camera) {
+    private static void setOrientation(CameraData cameraData, boolean isLandscape, Camera camera,CameraConfiguration configuration) {
         int orientation = getDisplayOrientation(cameraData.cameraID);
         if(isLandscape) {
             orientation = orientation - 90;
         }
+
+        if((configuration.height == 240 && configuration.width ==320) ||(configuration.height == 320 && configuration.width ==240)){
+            orientation = (orientation + 270) % 360;
+        }
+
         camera.setDisplayOrientation(orientation);
     }
 

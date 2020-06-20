@@ -926,6 +926,13 @@ public class LandscapeActivity extends Activity {
         SopCastLog.isOpen(true);
         mLFLiveView.init();
         CameraConfiguration.Builder cameraBuilder = new CameraConfiguration.Builder();
+        DisplayMetrics dm = getApplicationContext().getResources().getDisplayMetrics();
+        int height= dm.heightPixels;
+        int width= dm.widthPixels;
+        if((height == 240 && width ==320) ||(height == 320 && width ==240)){
+            cameraBuilder.setPreview(height,width);
+        }
+
         if(getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         {
             cameraBuilder.setOrientation(CameraConfiguration.Orientation.LANDSCAPE);
@@ -1239,7 +1246,7 @@ public class LandscapeActivity extends Activity {
                 DisplayMetrics dm = getApplicationContext().getResources().getDisplayMetrics();
                 int height= dm.heightPixels;
                 int width= dm.widthPixels;
-                if(height == 240 && width ==320){
+                if((height == 240 && width ==320)||(height== 320 && width==240)){
                     uriAPI += String.format("&deviceType=%d",1);
                 }else{
                     uriAPI += String.format("&deviceType=%d",0);
