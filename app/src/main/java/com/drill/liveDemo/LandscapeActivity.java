@@ -173,7 +173,7 @@ public class LandscapeActivity extends Activity {
                     if (isRecording) {
                         stopLive();
                     } else {
-                        startLive();
+                       startLive();
                     }
                     break;
                 case 2://间隔时间
@@ -601,7 +601,7 @@ public class LandscapeActivity extends Activity {
             }
         };
 
-        controlScheduleManager = controlScheduleExecutor.scheduleAtFixedRate(controlTimeTask, 1, 3, TimeUnit.SECONDS);
+        controlScheduleManager = controlScheduleExecutor.scheduleAtFixedRate(controlTimeTask, 1, 10, TimeUnit.SECONDS);
 
     }
 
@@ -991,7 +991,7 @@ public class LandscapeActivity extends Activity {
             @Override
             public void startError(int error) {
                 //直播失败
-                Toast.makeText(LandscapeActivity.this, "开播失败", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LandscapeActivity.this, "开播失败,error:"+error, Toast.LENGTH_SHORT).show();
                 mLFLiveView.stop();
                 isRecording = false;
                 refreshLiveInfo();
