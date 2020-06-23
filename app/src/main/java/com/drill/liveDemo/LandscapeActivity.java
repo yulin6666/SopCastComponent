@@ -216,24 +216,12 @@ public class LandscapeActivity extends Activity {
 
         //获取权限
         if (Build.VERSION.SDK_INT > 22) {
-            if (ContextCompat.checkSelfPermission(LandscapeActivity.this,
-                    android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                //先判断有没有权限 ，没有就在这里进行权限的申请
-                ActivityCompat.requestPermissions(LandscapeActivity.this,
-                        new String[]{
-                                Manifest.permission.CAMERA,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                Manifest.permission.RECORD_AUDIO,
-                                Manifest.permission.ACCESS_COARSE_LOCATION,
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.READ_PHONE_STATE,
-                        }, 1);
-                return;
-            } else {
+
+            if(premissionOk())
+            {
                 //说明已经获取到摄像头权限了
                 Log.i("MainActivity", "已经获取了权限");
                 init();
-
             }
         } else {
 //这个说明系统版本在6.0之下，不需要动态获取权限。
@@ -242,6 +230,64 @@ public class LandscapeActivity extends Activity {
 
     }
 
+    private boolean premissionOk(){
+        boolean ret = true;
+        if (ContextCompat.checkSelfPermission(LandscapeActivity.this,
+                android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            //先判断有没有权限 ，没有就在这里进行权限的申请
+            ActivityCompat.requestPermissions(LandscapeActivity.this,
+                    new String[]{
+                            Manifest.permission.CAMERA
+                    }, 1);
+            ret = false;
+        }
+        if (ContextCompat.checkSelfPermission(LandscapeActivity.this,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            //先判断有没有权限 ，没有就在这里进行权限的申请
+            ActivityCompat.requestPermissions(LandscapeActivity.this,
+                    new String[]{
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    }, 1);
+            ret = false;
+        }
+        if (ContextCompat.checkSelfPermission(LandscapeActivity.this,
+                android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            //先判断有没有权限 ，没有就在这里进行权限的申请
+            ActivityCompat.requestPermissions(LandscapeActivity.this,
+                    new String[]{
+                            Manifest.permission.RECORD_AUDIO
+                    }, 1);
+            ret = false;
+        }
+        if (ContextCompat.checkSelfPermission(LandscapeActivity.this,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //先判断有没有权限 ，没有就在这里进行权限的申请
+            ActivityCompat.requestPermissions(LandscapeActivity.this,
+                    new String[]{
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    }, 1);
+            ret = false;
+        }
+        if (ContextCompat.checkSelfPermission(LandscapeActivity.this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //先判断有没有权限 ，没有就在这里进行权限的申请
+            ActivityCompat.requestPermissions(LandscapeActivity.this,
+                    new String[]{
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                    }, 1);
+            ret = false;
+        }
+        if (ContextCompat.checkSelfPermission(LandscapeActivity.this,
+                android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            //先判断有没有权限 ，没有就在这里进行权限的申请
+            ActivityCompat.requestPermissions(LandscapeActivity.this,
+                    new String[]{
+                            Manifest.permission.READ_PHONE_STATE
+                    }, 1);
+            ret = false;
+        }
+        return ret;
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
