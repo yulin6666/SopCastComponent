@@ -1228,8 +1228,20 @@ public class LandscapeActivity extends Activity {
             mGpsStarted = false;
 
         }
-
         ((myApplication) getApplication()).mlocationService.unregisterListener(mListener);
+
+        //关闭上报定时器
+        if (uploaderScheduleManager != null)
+        {
+            uploaderScheduleManager.cancel(true);
+            uploaderScheduleManager = null;
+        }
+        //关闭控制定时器
+        if(controlScheduleManager != null){
+            controlScheduleManager.cancel(true);
+            controlScheduleManager = null;
+        }
+
     }
 
     public String httpGet( String httpUrl ){
