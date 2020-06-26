@@ -22,7 +22,10 @@
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.autofocus" />
+    <!--排序系统任务权限	重新排序系统Z轴运行中的任务-->
+    <uses-permission android:name="android.permission.GET_TASKS"/>
 
+    <uses-permission android:name="android.permission.REORDER_TASKS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
 
