@@ -23,9 +23,9 @@
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.autofocus" />
     <!--排序系统任务权限	重新排序系统Z轴运行中的任务-->
-    <uses-permission android:name="android.permission.GET_TASKS"/>
+    <uses-permission android:name="android.permission.GET_TASKS" />
 
-    <uses-permission android:name="android.permission.REORDER_TASKS"/>
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
 
@@ -61,6 +61,7 @@
         <!--</activity>-->
         <activity
             android:name=".LandscapeActivity"
+            android:excludeFromRecents="true"
             android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -82,6 +83,7 @@
         <activity
             android:name="com.google.zxing.client.android.CaptureActivity"
             android:clearTaskOnLaunch="true"
+            android:excludeFromRecents="true"
             android:screenOrientation="sensor"
             android:stateNotNeeded="true"
             android:theme="@style/AppTheme.NoActionBar"
@@ -142,10 +144,12 @@
         </activity>
         <activity
             android:name="com.google.zxing.client.android.PreferencesActivity"
+            android:excludeFromRecents="true"
             android:label="@string/preferences_name"
             android:stateNotNeeded="true" />
         <activity
             android:name="com.google.zxing.client.android.encode.EncodeActivity"
+            android:excludeFromRecents="true"
             android:stateNotNeeded="true">
             <intent-filter>
                 <action android:name="com.google.zxing.client.android.ENCODE" />
@@ -166,6 +170,7 @@
         </activity>
         <activity
             android:name="com.google.zxing.client.android.book.SearchBookContentsActivity"
+            android:excludeFromRecents="true"
             android:label="@string/sbc_name"
             android:screenOrientation="sensorLandscape"
             android:stateNotNeeded="true">
@@ -176,6 +181,7 @@
         </activity>
         <activity
             android:name="com.google.zxing.client.android.share.ShareActivity"
+            android:excludeFromRecents="true"
             android:screenOrientation="user"
             android:stateNotNeeded="true">
             <intent-filter>
@@ -185,18 +191,22 @@
         </activity>
         <activity
             android:name="com.google.zxing.client.android.history.HistoryActivity"
+            android:excludeFromRecents="true"
             android:label="@string/history_title"
             android:stateNotNeeded="true" />
         <activity
             android:name="com.google.zxing.client.android.share.BookmarkPickerActivity"
+            android:excludeFromRecents="true"
             android:label="@string/bookmark_picker_name"
             android:stateNotNeeded="true" />
         <activity
             android:name="com.google.zxing.client.android.share.AppPickerActivity"
+            android:excludeFromRecents="true"
             android:label="@string/app_picker_name"
             android:stateNotNeeded="true" />
         <activity
             android:name="com.google.zxing.client.android.HelpActivity"
+            android:excludeFromRecents="true"
             android:label="@string/menu_help"
             android:screenOrientation="user"
             android:stateNotNeeded="true" />
