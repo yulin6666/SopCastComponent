@@ -121,10 +121,10 @@ public class LandscapeActivity extends Activity {
     private String mPublishUrl;
 
     private EditText mipEditText;
-    private String mip;
+
     //final String defaultIP = "123.124.164.142";
     final String defaultIP = "drli.urthe1.xyz";
-
+    private String mip = defaultIP;
     private String mdeviceID;
     private String mStatus;
     private String mNetWorkInfo;
@@ -334,8 +334,9 @@ public class LandscapeActivity extends Activity {
 
         initDeviceID();
         initGps();
-        initBattery();
-        initNetType();
+
+        fetchBattery();
+        fetchNetType();
 
         initEffects();
         initViews();
@@ -439,7 +440,7 @@ public class LandscapeActivity extends Activity {
         mSatellite = 0;
         mAltitude = 0;
         maddr = "";
-        mDescribe = "";
+        mDescribe = "网络定位成功";
 
         //获取locationservice实例，建议应用中只初始化1个location实例，然后使用，可以参考其他示例的activity，都是通过此种方式获取locationservice实例的
         ((myApplication) getApplication()).mlocationService.registerListener(mListener);
@@ -455,7 +456,7 @@ public class LandscapeActivity extends Activity {
         Log.d(TAG, String.format("deviceID:%s", mdeviceID));
     }
 
-    private void initBattery() {
+    private void fetchBattery() {
 
         //获取电量信息
         BatteryManager manager = (BatteryManager) getSystemService(BATTERY_SERVICE);
@@ -463,7 +464,7 @@ public class LandscapeActivity extends Activity {
         Log.d("battery", String.format("battery info:%d", mbattery));
     }
 
-    private void initNetType(){
+    private void fetchNetType(){
         //获得网络类型
         Context context = getApplicationContext();
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);        //获取所有网络连接的信息
@@ -506,7 +507,13 @@ public class LandscapeActivity extends Activity {
         uploaderTimeTask = new Runnable() {
             @Override
             public void run() {
-
+                //获取电量
+                fetchBattery();
+                //获取网络信息
+                fetchNetType();
+                //获得当前时间
+                DateFormat dateTimeformat2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                mdeviceTime = dateTimeformat2.format(new Date());
                 uploadInfo();
             }
         };
@@ -525,9 +532,11 @@ public class LandscapeActivity extends Activity {
                 int width= dm.widthPixels;
                 String jsonStr;
                 if(height == 240 && width ==320){
-                    jsonStr = httpGet("http://drli.urthe1.xyz/api/getClientStatus?deviceType=1");
+                    String url = "http://"+mip+"/api/getClientStatus?deviceType=1";
+                    jsonStr = httpGet(url);
                 }else{
-                    jsonStr = httpGet("http://drli.urthe1.xyz/api/getClientStatus");
+                    String url = "http://"+mip+"/api/getClientStatus";
+                    jsonStr = httpGet(url);
                 }
                 //解析json文件
                 Log.d("camera",jsonStr);
@@ -619,7 +628,8 @@ public class LandscapeActivity extends Activity {
                     e.printStackTrace();
                 }
                 //全局控制接口
-                jsonStr = httpGet("http://drli.urthe1.xyz/api/settings");
+                String url = "http://"+mip+"/api/settings";
+                jsonStr = httpGet(url);
                 try {
                     JSONObject jsonObject=new JSONObject(jsonStr);
                     //间隔时间
@@ -957,7 +967,7 @@ public class LandscapeActivity extends Activity {
         SharedPreferences pref = getSharedPreferences("data",MODE_PRIVATE);
         mProtait = pref.getBoolean("portrait",false);
         mid = pref.getString("id","");
-        mip = pref.getString("ip","");
+        mip = pref.getString("ip",defaultIP);
         mresolution  = pref.getString("resolution","");
         if(TextUtils.isEmpty(mid)) {
             Toast.makeText(LandscapeActivity.this, "mid未赋值，等待...", Toast.LENGTH_SHORT).show();
@@ -1324,44 +1334,44 @@ public class LandscapeActivity extends Activity {
     {
         new Thread(new Runnable() {
             public void run() {
-                String uriAPI = "http://drli.urthe1.xyz/api/updateDevicesStatus?deviceID=" + mdeviceID;
-                if(!TextUtils.isEmpty(mStatus)){
-                    uriAPI += String.format("&appStatus=%s",mStatus);
-                    uriAPI += String.format("&streamStatus=%b",isRecording);
-                }
-                if(!TextUtils.isEmpty(mNetWorkInfo)){
-                    uriAPI += String.format("&networkType=%s",mNetWorkInfo);
-                }
-                if(mbattery >= 0){
-                    uriAPI += String.format("&battery=%d",mbattery);
-                }
-                if(mlongitude >0){
-                    uriAPI += String.format("&longitude=%f",mlongitude);
-                }
-                if(mlatitude >0){
-                    uriAPI += String.format("&latitude=%f",mlatitude);
-                }
-                if(!TextUtils.isEmpty(mDescribe)){
-                    uriAPI += String.format("&locationType=%s",mDescribe);
-                }
-                if(mDirection > 0){
-                    uriAPI += String.format("&direction=%f",mDirection);
-                }
-
-                DisplayMetrics dm = getApplicationContext().getResources().getDisplayMetrics();
-                int height= dm.heightPixels;
-                int width= dm.widthPixels;
-                if((height == 240 && width ==320)||(height== 320 && width==240)){
-                    uriAPI += String.format("&deviceType=%d",1);
-                }else{
-                    uriAPI += String.format("&deviceType=%d",0);
-                }
+                String uriAPI = "http://"+mip+"/api/updateDevicesStatus";
 
                 HttpClient postClient = new DefaultHttpClient();
                 HttpPost httpPost = new HttpPost(uriAPI);
                 List<NameValuePair> params = new ArrayList<NameValuePair>();
+                params.add(new BasicNameValuePair("deviceID", mdeviceID));
+                if(!TextUtils.isEmpty(mStatus)){
+                    params.add(new BasicNameValuePair("appStatus", mStatus));
+                    params.add(new BasicNameValuePair("streamStatus",String.format("%b",isRecording)));
+                }
+                if(!TextUtils.isEmpty(mNetWorkInfo)){
+                    params.add(new BasicNameValuePair("networkType", mNetWorkInfo));
+                }
+                if(mbattery >= 0){
+                    params.add(new BasicNameValuePair("battery", String.format("%d",mbattery)));
+                }
+                if(mlongitude >0){
+                    params.add(new BasicNameValuePair("longitude", String.format("%f",mlongitude)));
+                }
+                if(mlatitude >0){
+                    params.add(new BasicNameValuePair("latitude", String.format("%f",mlatitude)));
+                }
+                if(!TextUtils.isEmpty(mDescribe)){
+                    params.add(new BasicNameValuePair("locationType", mDescribe));
+                }
+                if(mDirection > 0){
+                    params.add(new BasicNameValuePair("direction", String.format("%f",mDirection)));
+                }
                 if(!TextUtils.isEmpty(mdeviceTime)){
                     params.add(new BasicNameValuePair("deviceTime", mdeviceTime));
+                }
+                DisplayMetrics dm = getApplicationContext().getResources().getDisplayMetrics();
+                int height= dm.heightPixels;
+                int width= dm.widthPixels;
+                if((height == 240 && width ==320)||(height== 320 && width==240)){
+                    params.add(new BasicNameValuePair("deviceType", String.format("%d",1)));
+                }else{
+                    params.add(new BasicNameValuePair("deviceType", String.format("%d",0)));
                 }
 
                 UrlEncodedFormEntity entity;
@@ -1396,6 +1406,7 @@ public class LandscapeActivity extends Activity {
 
     protected void onResume(){
         super.onResume();
+        mStatus = "正常";
         Log.e("active","active:resume");
     }
 
@@ -1413,8 +1424,6 @@ public class LandscapeActivity extends Activity {
             {
                 mlongitude=location.getLongitude();
                 mlatitude=location.getLatitude();
-                DateFormat dateTimeformat2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                mdeviceTime = dateTimeformat2.format(new Date());
                 mRadius = location.getRadius();
                 mSpeed = location.getSpeed();
                 maddr =location.getAddrStr();
@@ -1423,9 +1432,9 @@ public class LandscapeActivity extends Activity {
                     mSatellite = location.getSatelliteNumber();
                     mDescribe="GPS定位成功";
                 }else if(location.getLocType() == BDLocation.TypeNetWorkLocation){
-                    mDescribe="网络定位成功";
+                    mDescribe="GPS定位成功";
                 }else if (location.getLocType() == BDLocation.TypeOffLineLocation){
-                    mDescribe="网络定位成功";
+                    mDescribe="GPS定位成功";
                 }
                 mDirection=location.getDirection();
 
@@ -1607,7 +1616,7 @@ public class LandscapeActivity extends Activity {
 
                 new Thread(new Runnable() {
                     public void run() {
-                        String uriAPI = "http://drli.urthe1.xyz/api/newScanningMessage?deviceID=" + mdeviceID;
+                        String uriAPI = "http://"+mip+"/api/newScanningMessage?deviceID=" + mdeviceID;
                         HttpClient postClient = new DefaultHttpClient();
                         HttpPost httpPost = new HttpPost(uriAPI);
                         List<NameValuePair> params = new ArrayList<NameValuePair>();
