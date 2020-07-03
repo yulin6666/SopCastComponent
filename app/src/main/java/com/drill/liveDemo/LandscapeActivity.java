@@ -130,6 +130,7 @@ public class LandscapeActivity extends Activity {
     private String mNetWorkInfo;
     private int mbattery;
 
+    private String gpsUploadUrl = "";
     //动态配置信息
     private int mInterval;//上报间隔时间
 
@@ -153,6 +154,7 @@ public class LandscapeActivity extends Activity {
     private double mAltitude;//海拔高度
     private String maddr;//地址信息
     private String mDescribe;//描述信息
+    private int mtype;//类型
 
     private String mScanContent;
 
@@ -441,6 +443,7 @@ public class LandscapeActivity extends Activity {
         mAltitude = 0;
         maddr = "";
         mDescribe = "网络定位成功";
+        mtype = -1;
 
         //获取locationservice实例，建议应用中只初始化1个location实例，然后使用，可以参考其他示例的activity，都是通过此种方式获取locationservice实例的
         ((myApplication) getApplication()).mlocationService.registerListener(mListener);
@@ -650,6 +653,13 @@ public class LandscapeActivity extends Activity {
                             msg.what = 5;
                             msg.obj = ip;
                             cameraHandler.sendMessage(msg);
+                        }
+                    }
+                    //gps单独上报地址
+                    if(!jsonObject.isNull("uploadUrl")){
+                        String uploadurl = jsonObject.getString("uploadUrl");
+                        if(!uploadurl.equals(gpsUploadUrl)){
+                            gpsUploadUrl = url;
                         }
                     }
                 }catch (JSONException e) {
@@ -1391,11 +1401,56 @@ public class LandscapeActivity extends Activity {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
+                };
+
+                if(!gpsUploadUrl.isEmpty()){
+                    sendDirectToServer();
                 }
-                ;
             }
         }).start();
 
+    }
+
+    private void sendDirectToServer(){
+
+        HttpClient postClient = new DefaultHttpClient();
+        HttpPost httpPost = new HttpPost(gpsUploadUrl);
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("deviceID", mdeviceID));
+        if(mlongitude >0){
+            params.add(new BasicNameValuePair("longitude", String.format("%f",mlongitude)));
+        }
+        if(mlatitude >0){
+            params.add(new BasicNameValuePair("latitude", String.format("%f",mlatitude)));
+        }
+        if(!TextUtils.isEmpty(mdeviceTime)){
+            params.add(new BasicNameValuePair("createDate", mdeviceTime));
+        }
+        if(mSpeed >= 0){
+            params.add(new BasicNameValuePair("speed", String.format("%f",mSpeed)));
+        }
+        if(mtype > -1){
+            params.add(new BasicNameValuePair("code", String.format("%d",mtype)));
+        }
+
+        UrlEncodedFormEntity entity;
+        HttpResponse response;
+        try {
+            entity = new UrlEncodedFormEntity(params, "utf-8");
+            httpPost.setEntity(entity);
+            response = postClient.execute(httpPost);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        };
     }
 
     protected void onPause(){
@@ -1437,6 +1492,7 @@ public class LandscapeActivity extends Activity {
                     mDescribe="GPS定位成功";
                 }
                 mDirection=location.getDirection();
+                mtype = location.getLocType();
 
                 //sendRefreshMessage();
 
