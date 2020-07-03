@@ -553,6 +553,16 @@ public class LandscapeActivity extends Activity {
                             if(facing != cameraNow && facing!=0){
                                 cameraHandler.sendEmptyMessage(0);
                             }
+                            //间隔时间
+                            if(!jsonObject.isNull("uploadInterval")) {
+                                int reportInterval = jsonObject.getInt("uploadInterval");
+                                if (reportInterval != mInterval) {
+                                    Message msg = new Message();
+                                    msg.what = 2;
+                                    msg.arg1 = reportInterval;
+                                    cameraHandler.sendMessage(msg);
+                                }
+                            }
                             //推流状态
                             boolean cRecord = jsonObject.getBoolean("pushStatus");
                             if(cRecord != isRecording)
@@ -632,16 +642,6 @@ public class LandscapeActivity extends Activity {
                 jsonStr = httpGet(url);
                 try {
                     JSONObject jsonObject=new JSONObject(jsonStr);
-                    //间隔时间
-                    if(!jsonObject.isNull("interval")) {
-                        int reportInterval = jsonObject.getInt("interval");
-                        if (reportInterval != mInterval) {
-                            Message msg = new Message();
-                            msg.what = 2;
-                            msg.arg1 = reportInterval;
-                            cameraHandler.sendMessage(msg);
-                        }
-                    }
                     //推流地址
                     if(!jsonObject.isNull("ip")){
                         String ip = jsonObject.getString("ip");
