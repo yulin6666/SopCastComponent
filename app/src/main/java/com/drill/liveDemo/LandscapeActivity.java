@@ -659,7 +659,7 @@ public class LandscapeActivity extends Activity {
                     if(!jsonObject.isNull("uploadUrl")){
                         String uploadurl = jsonObject.getString("uploadUrl");
                         if(!uploadurl.equals(gpsUploadUrl)){
-                            gpsUploadUrl = url;
+                            gpsUploadUrl = uploadurl;
                         }
                     }
                 }catch (JSONException e) {
@@ -1416,7 +1416,7 @@ public class LandscapeActivity extends Activity {
         HttpClient postClient = new DefaultHttpClient();
         HttpPost httpPost = new HttpPost(gpsUploadUrl);
         List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("deviceID", mdeviceID));
+        params.add(new BasicNameValuePair("deviceid", mdeviceID));
         if(mlongitude >0){
             params.add(new BasicNameValuePair("longitude", String.format("%f",mlongitude)));
         }
@@ -1430,7 +1430,7 @@ public class LandscapeActivity extends Activity {
             params.add(new BasicNameValuePair("speed", String.format("%f",mSpeed)));
         }
         if(mtype > -1){
-            params.add(new BasicNameValuePair("code", String.format("%d",mtype)));
+            params.add(new BasicNameValuePair("code", String.format("%d",61)));
         }
 
         UrlEncodedFormEntity entity;
