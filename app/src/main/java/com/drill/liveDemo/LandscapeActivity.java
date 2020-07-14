@@ -66,7 +66,6 @@ import java.util.List;
 import java.io.*;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Handler;
@@ -637,7 +636,7 @@ public class LandscapeActivity extends Activity {
                             break;
                         }
                     }
-                }catch (JSONException e) {
+                }catch (Exception e) {
                     e.printStackTrace();
                 }
                 //全局控制接口
@@ -662,7 +661,7 @@ public class LandscapeActivity extends Activity {
                             gpsUploadUrl = uploadurl;
                         }
                     }
-                }catch (JSONException e) {
+                }catch (Exception e) {
                     e.printStackTrace();
                 }
             }
