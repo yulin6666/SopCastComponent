@@ -130,6 +130,8 @@ public class LandscapeActivity extends Activity {
     private int mbattery;
 
     private String gpsUploadUrl = "";
+    private String scanUploadUrl = "";
+
     //动态配置信息
     private int mInterval;//上报间隔时间
 
@@ -657,8 +659,13 @@ public class LandscapeActivity extends Activity {
                     //gps单独上报地址
                     if(!jsonObject.isNull("uploadUrl")){
                         String uploadurl = jsonObject.getString("uploadUrl");
-                        if(!uploadurl.equals(gpsUploadUrl)){
-                            gpsUploadUrl = uploadurl;
+                        String[] temp = null;
+                        temp = uploadurl.split("\\|");
+                        if(!temp[0].equals(gpsUploadUrl)){
+                            gpsUploadUrl = temp[0];
+                        }
+                        if(!temp[1].equals(scanUploadUrl)){
+                            scanUploadUrl = temp[1];
                         }
                     }
                 }catch (Exception e) {
@@ -1679,8 +1686,10 @@ public class LandscapeActivity extends Activity {
                             params.add(new BasicNameValuePair("content", mScanContent));
                         }
                         long time=System.currentTimeMillis();//long now = android.os.SystemClock.uptimeMillis();
-                        params.add(new BasicNameValuePair("scanningTime", String.format("%d",time)));
-
+                        SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        Date d1=new Date(time);
+                        String t1=format.format(d1);
+                        params.add(new BasicNameValuePair("scanningTime", t1));
                         UrlEncodedFormEntity entity;
                         HttpResponse response;
                         try {
@@ -1698,6 +1707,11 @@ public class LandscapeActivity extends Activity {
                                 });
                             }
 
+                            //
+                            if(!scanUploadUrl.isEmpty()){
+                                sendScanResultDirectToServer();
+                            }
+
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         } catch (ClientProtocolException e) {
@@ -1712,4 +1726,40 @@ public class LandscapeActivity extends Activity {
             init();
         }
     };
+
+    private void sendScanResultDirectToServer(){
+
+        HttpClient postClient = new DefaultHttpClient();
+        HttpPost httpPost = new HttpPost(scanUploadUrl);
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("设备编号", mdeviceID));
+
+        if(!TextUtils.isEmpty(mScanContent)){
+            params.add(new BasicNameValuePair("扫描信息", mScanContent));
+        }
+        long time=System.currentTimeMillis();//long now = android.os.SystemClock.uptimeMillis();
+        SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date d1=new Date(time);
+        String t1=format.format(d1);
+        params.add(new BasicNameValuePair("扫描时间", t1));
+
+        UrlEncodedFormEntity entity;
+        HttpResponse response;
+        try {
+            entity = new UrlEncodedFormEntity(params, "utf-8");
+            httpPost.setEntity(entity);
+            response = postClient.execute(httpPost);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        };
+    }
 }
