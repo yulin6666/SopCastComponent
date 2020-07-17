@@ -1679,10 +1679,7 @@ public class LandscapeActivity extends Activity {
                             params.add(new BasicNameValuePair("content", mScanContent));
                         }
                         long time=System.currentTimeMillis();//long now = android.os.SystemClock.uptimeMillis();
-                        SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        Date d1=new Date(time);
-                        String t1=format.format(d1);
-                        params.add(new BasicNameValuePair("scanningTime", t1));
+                        params.add(new BasicNameValuePair("scanningTime", String.format("%d",time)));
 
                         UrlEncodedFormEntity entity;
                         HttpResponse response;
