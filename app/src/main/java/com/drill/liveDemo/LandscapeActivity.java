@@ -1436,7 +1436,7 @@ public class LandscapeActivity extends Activity {
             params.add(new BasicNameValuePair("speed", String.format("%f",mSpeed)));
         }
         if(mtype > -1){
-            params.add(new BasicNameValuePair("code", String.format("%d",61)));
+            params.add(new BasicNameValuePair("code", String.format("%d",mtype)));
         }
 
         UrlEncodedFormEntity entity;
@@ -1499,6 +1499,7 @@ public class LandscapeActivity extends Activity {
                 }
                 mDirection=location.getDirection();
                 mtype = location.getLocType();
+                Log.d("location",String.format("location type:%d",mtype));
 
                 //sendRefreshMessage();
 
