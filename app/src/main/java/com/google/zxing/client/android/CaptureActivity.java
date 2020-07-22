@@ -670,7 +670,8 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
       if (rawResultString.length() > 32) {
         rawResultString = rawResultString.substring(0, 32) + " ...";
       }
-      statusView.setText(getString(resultHandler.getDisplayTitle()) + " : " + rawResultString);
+      //statusView.setText(getString(resultHandler.getDisplayTitle()) + " : " + rawResultString);
+      statusView.setText("扫描成功");
     }
 
     maybeSetClipboard(resultHandler);
