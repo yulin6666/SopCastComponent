@@ -1730,16 +1730,16 @@ public class LandscapeActivity extends Activity {
         HttpClient postClient = new DefaultHttpClient();
         HttpPost httpPost = new HttpPost(scanUploadUrl);
         List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("设备编号", mdeviceID));
+        params.add(new BasicNameValuePair("deviceid", mdeviceID));
 
         if(!TextUtils.isEmpty(mScanContent)){
-            params.add(new BasicNameValuePair("扫描信息", mScanContent));
+            params.add(new BasicNameValuePair("info", mScanContent));
         }
         long time=System.currentTimeMillis();//long now = android.os.SystemClock.uptimeMillis();
         SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date d1=new Date(time);
         String t1=format.format(d1);
-        params.add(new BasicNameValuePair("扫描时间", t1));
+        params.add(new BasicNameValuePair("time", t1));
 
         UrlEncodedFormEntity entity;
         HttpResponse response;
