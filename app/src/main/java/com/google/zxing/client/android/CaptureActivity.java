@@ -178,7 +178,7 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
         timeHandler.sendMessage(message);
       }
     };
-    timer.schedule(task,60000);//延迟60s执行
+    timer.schedule(task,20000);//延迟60s执行
   }
 
   @Override
