@@ -712,7 +712,7 @@ public class LandscapeActivity extends Activity {
                         startActivityForResult(intent, 111);
                         return true;
                     };
-                }).sendEmptyMessageDelayed(0,1);//表示延迟1秒发送任务
+                }).sendEmptyMessageDelayed(0,100);//表示延迟1秒发送任务
 
             }
         });
