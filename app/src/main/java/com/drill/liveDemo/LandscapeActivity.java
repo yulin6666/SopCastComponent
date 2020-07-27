@@ -979,6 +979,12 @@ public class LandscapeActivity extends Activity {
         isRecording = false;
         refreshLiveInfo();
     }
+
+    @Override
+    public void onBackPressed() {
+        Toast.makeText(LandscapeActivity.this, "按HOME返回桌面", Toast.LENGTH_SHORT).show();
+    }
+
     private void startLive(){
         SharedPreferences pref = getSharedPreferences("data",MODE_PRIVATE);
         mProtait = pref.getBoolean("portrait",false);
