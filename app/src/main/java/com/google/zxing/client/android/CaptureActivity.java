@@ -671,8 +671,8 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
         rawResultString = rawResultString.substring(0, 32) + " ...";
       }
       //statusView.setText(getString(resultHandler.getDisplayTitle()) + " : " + rawResultString);
-      statusView.setText("扫描成功");
     }
+    statusView.setText("扫描成功");
 
     maybeSetClipboard(resultHandler);
 
