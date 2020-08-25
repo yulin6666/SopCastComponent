@@ -13,6 +13,7 @@ import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
+import android.nfc.Tag;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -122,7 +123,8 @@ public class LandscapeActivity extends Activity {
     private EditText mipEditText;
 
     //final String defaultIP = "123.124.164.142";
-    final String defaultIP = "drli.urthe1.xyz";
+    //final String defaultIP = "drli.urthe1.xyz";
+    final String defaultIP = "39.106.226.236";
     private String mip = defaultIP;
     private String mdeviceID;
     private String mStatus;
@@ -449,6 +451,11 @@ public class LandscapeActivity extends Activity {
         //获取locationservice实例，建议应用中只初始化1个location实例，然后使用，可以参考其他示例的activity，都是通过此种方式获取locationservice实例的
         ((myApplication) getApplication()).mlocationService.registerListener(mListener);
         ((myApplication) getApplication()).mlocationService.setLocationOption(((myApplication) getApplication()).mlocationService.getDefaultLocationClientOption());
+
+        ((myApplication) getApplication()).mlocationService.start();
+        Log.e(TAG, "初始化,打开GPS!");
+        mGpsStarted = true;
+
     }
 
     private void initDeviceID() {
@@ -957,14 +964,17 @@ public class LandscapeActivity extends Activity {
     }
     private void openGps(boolean gpsEnable){
         if(gpsEnable) {
-            mGpsStarted = true;
-            ((myApplication) getApplication()).mlocationService.start();
-            Toast.makeText(LandscapeActivity.this, "打开GPS!", Toast.LENGTH_SHORT).show();
-
+            if(!mGpsStarted){
+                mGpsStarted = true;
+                ((myApplication) getApplication()).mlocationService.start();
+                Log.e(TAG, "开关打开GPS!");
+                Toast.makeText(LandscapeActivity.this, "打开GPS!", Toast.LENGTH_SHORT).show();
+            }
         }else{
             mGpsStarted = false;
             ((myApplication) getApplication()).mlocationService.stop();
             mDescribe = "远程关闭GPS，请在控制台打开";
+            Log.e(TAG, "开关关闭GPS!");
             Toast.makeText(LandscapeActivity.this, "关闭GPS!", Toast.LENGTH_SHORT).show();
 
         }
@@ -1506,9 +1516,8 @@ public class LandscapeActivity extends Activity {
                 mDirection=location.getDirection();
                 mtype = location.getLocType();
                 Log.d("location",String.format("location type:%d",mtype));
-
-                //sendRefreshMessage();
-
+            }else{
+                Log.e(TAG,"gps type serverError!");
             }
 //            {
 //                int tag = 1;
@@ -1668,7 +1677,7 @@ public class LandscapeActivity extends Activity {
                     sb.append("\n" + diagnosticMessage);
                 }
             }
-            Log.d("GPS",sb.toString());
+            Log.e(TAG,sb.toString());
             //mDescribe = sb.toString();
             //sendRefreshMessage();
         }
