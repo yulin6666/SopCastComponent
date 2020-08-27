@@ -459,12 +459,17 @@ public class LandscapeActivity extends Activity {
     }
 
     private void initDeviceID() {
-        /***
+        /***deviceID
          * 设备ID号
          */
         TelephonyManager tm = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-        mdeviceID = tm.getDeviceId().toString();
-        Log.d(TAG, String.format("deviceID:%s", mdeviceID));
+        if(tm.getDeviceId()!=null){
+            mdeviceID = tm.getDeviceId().toString();
+            Log.d(TAG, String.format("deviceID:%s", mdeviceID));
+        }else{
+            mdeviceID = "noMEID";
+        }
+
     }
 
     private void fetchBattery() {
@@ -1497,6 +1502,7 @@ public class LandscapeActivity extends Activity {
         public void onReceiveLocation(BDLocation location) {
 
             // TODO Auto-generated method stub
+            Log.e(TAG,String.format("gps:serverType:%d",location.getLocType()));
             if (null != location && location.getLocType() != BDLocation.TypeServerError)
             {
                 mlongitude=location.getLongitude();
