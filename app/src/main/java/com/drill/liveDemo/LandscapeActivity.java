@@ -16,6 +16,7 @@ import android.net.NetworkInfo;
 import android.nfc.Tag;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -463,11 +464,23 @@ public class LandscapeActivity extends Activity {
          * 设备ID号
          */
         TelephonyManager tm = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-        if(tm.getDeviceId()!=null){
-            mdeviceID = tm.getDeviceId().toString();
-            Log.d(TAG, String.format("deviceID:%s", mdeviceID));
-        }else{
-            mdeviceID = "noMEID";
+//        if(tm.getDeviceId()!=null){
+//            mdeviceID = tm.getDeviceId().toString();
+//            Log.d(TAG, String.format("deviceID:%s", mdeviceID));
+//        }else{
+//            mdeviceID = "noMEID";
+//        }
+
+        try{
+            String id = tm.getImei(0);
+            if(id != null){
+                mdeviceID = id;
+            }else {
+                mdeviceID = "noMEID";
+            }
+        }catch (NullPointerException ex){
+            Log.e(TAG,"获取meid空指针异常");
+            return;
         }
 
     }

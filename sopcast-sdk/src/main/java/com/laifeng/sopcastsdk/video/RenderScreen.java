@@ -72,8 +72,16 @@ public class RenderScreen {
     private void initCameraTexCoordBuffer() {
         int cameraWidth, cameraHeight;
         CameraData cameraData = CameraHolder.instance().getCameraData();
-        int width = cameraData.cameraWidth;
-        int height = cameraData.cameraHeight;
+        int width;
+        int height;
+        if(cameraData!=null){
+            width = cameraData.cameraWidth;
+            height = cameraData.cameraHeight;
+        }else{
+            width = 960;
+            height = 720;
+        }
+
         if(CameraHolder.instance().isLandscape()) {
             cameraWidth = Math.max(width, height);
             cameraHeight = Math.min(width, height);
