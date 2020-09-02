@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
@@ -707,6 +708,9 @@ public class LandscapeActivity extends Activity {
         mScanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                mScanButton.setEnabled(false);
+                mScanButton.setBackgroundColor(Color.GRAY);
                 //停止直播
                 stopLive();
 
@@ -727,7 +731,6 @@ public class LandscapeActivity extends Activity {
                     controlScheduleManager = null;
                 }
 
-
                 new Handler(new Handler.Callback() {
                     @Override
                     public boolean handleMessage(Message msg) {
@@ -737,7 +740,7 @@ public class LandscapeActivity extends Activity {
                         startActivityForResult(intent, 111);
                         return true;
                     };
-                }).sendEmptyMessageDelayed(0,300);//表示延迟1秒发送任务
+                }).sendEmptyMessageDelayed(0,1000);//表示延迟1秒发送任务
 
             }
         });
@@ -1108,6 +1111,8 @@ public class LandscapeActivity extends Activity {
             @Override
             public void onOpenSuccess() {
                 Toast.makeText(LandscapeActivity.this, "相机打开成功", Toast.LENGTH_LONG).show();
+                mScanButton.setEnabled(false);
+                mScanButton.setBackgroundColor(Color.GRAY);
             }
 
             @Override
@@ -1148,6 +1153,8 @@ public class LandscapeActivity extends Activity {
                 mLFLiveView.stop();
                 isRecording = false;
                 refreshLiveInfo();
+                mScanButton.setEnabled(true);
+                mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
             }
 
             @Override
@@ -1156,6 +1163,8 @@ public class LandscapeActivity extends Activity {
                 Toast.makeText(LandscapeActivity.this, "开始直播,id号:"+mid+",地址:"+mPublishUrl, Toast.LENGTH_SHORT).show();
                 isRecording = true;
                 refreshLiveInfo();
+                mScanButton.setEnabled(true);
+                mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
             }
         });
     }
@@ -1244,6 +1253,8 @@ public class LandscapeActivity extends Activity {
 //            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
             mLFLiveView.stop();
             isRecording = false;
+            mScanButton.setEnabled(true);
+            mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
             refreshLiveInfo();
         }
 
@@ -1253,6 +1264,8 @@ public class LandscapeActivity extends Activity {
             Toast.makeText(LandscapeActivity.this, "发布失败", Toast.LENGTH_SHORT).show();
 //            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
             isRecording = false;
+            mScanButton.setEnabled(true);
+            mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
             refreshLiveInfo();
         }
 
