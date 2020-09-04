@@ -1538,6 +1538,7 @@ public class LandscapeActivity extends Activity {
 
             // TODO Auto-generated method stub
             Log.e(TAG,String.format("gps:serverType:%d",location.getLocType()));
+            mtype = location.getLocType();
             if (null != location && location.getLocType() != BDLocation.TypeServerError)
             {
                 mlongitude=location.getLongitude();
@@ -1555,8 +1556,6 @@ public class LandscapeActivity extends Activity {
                     mDescribe="GPS定位成功";
                 }
                 mDirection=location.getDirection();
-                mtype = location.getLocType();
-                Log.d("location",String.format("location type:%d",mtype));
             }else{
                 Log.e(TAG,"gps type serverError!");
             }
