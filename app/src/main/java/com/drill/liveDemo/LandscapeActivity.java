@@ -212,6 +212,10 @@ public class LandscapeActivity extends Activity {
                 case 9://打开阻断器
                     openStopTimer((boolean)msg.obj);
                     break;
+                case 10://更新UI
+                    mScanButton.setEnabled(true);
+                    mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
+                    break;
                 default:
                     break;
             }
@@ -474,10 +478,11 @@ public class LandscapeActivity extends Activity {
 
         try{
             String id = tm.getImei(0);
-            if(id != null){
-                mdeviceID = id;
+            if(id == null || id == ""){
+                mdeviceID = "noMEID2";
             }else {
-                mdeviceID = "noMEID";
+                mdeviceID = id;
+                Log.e(TAG,"mdeviceID:"+mdeviceID);
             }
         }catch (NullPointerException ex){
             Log.e(TAG,"获取meid空指针异常");
@@ -597,6 +602,9 @@ public class LandscapeActivity extends Activity {
                             boolean cRecord = jsonObject.getBoolean("pushStatus");
                             if(cRecord != isRecording)
                                 cameraHandler.sendEmptyMessage(1);
+                            else{
+                                cameraHandler.sendEmptyMessage(10);
+                            }
                             //车牌号
                             if(!jsonObject.isNull("streamID")){
                                 String carId = jsonObject.getString("streamID");
@@ -712,7 +720,8 @@ public class LandscapeActivity extends Activity {
                 mScanButton.setEnabled(false);
                 mScanButton.setBackgroundColor(Color.GRAY);
                 //停止直播
-                stopLive();
+                if(isRecording)
+                    stopLive();
 
                 //释放view
                 if(mLFLiveView!=null){
@@ -1494,8 +1503,8 @@ public class LandscapeActivity extends Activity {
             response = postClient.execute(httpPost);
 
             if (response.getStatusLine().getStatusCode() == 200) {
-
             }
+            Log.e(TAG,String.format("gps: sendDirectToServer result:%d",response.getStatusLine().getStatusCode()));
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
