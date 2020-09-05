@@ -1406,6 +1406,10 @@ public class LandscapeActivity extends Activity {
     {
         new Thread(new Runnable() {
             public void run() {
+                //发送到服务器
+                if(!gpsUploadUrl.isEmpty()){
+                    sendDirectToServer();
+                }
                 String uriAPI = "http://"+mip+"/api/updateDevicesStatus";
 
                 HttpClient postClient = new DefaultHttpClient();
@@ -1456,6 +1460,7 @@ public class LandscapeActivity extends Activity {
                     if (response.getStatusLine().getStatusCode() == 200) {
 
                     }
+                    Log.e(TAG,String.format("gps: sendtoManager result:%d,mlongitude:%f",response.getStatusLine().getStatusCode(),mlongitude));
 
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
@@ -1465,9 +1470,6 @@ public class LandscapeActivity extends Activity {
                     e.printStackTrace();
                 };
 
-                if(!gpsUploadUrl.isEmpty()){
-                    sendDirectToServer();
-                }
             }
         }).start();
 
@@ -1504,7 +1506,7 @@ public class LandscapeActivity extends Activity {
 
             if (response.getStatusLine().getStatusCode() == 200) {
             }
-            Log.e(TAG,String.format("gps: sendDirectToServer result:%d",response.getStatusLine().getStatusCode()));
+            Log.e(TAG,String.format("gps: sendDirectToServer result:%d,mlongitude:%f",response.getStatusLine().getStatusCode(),mlongitude));
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
