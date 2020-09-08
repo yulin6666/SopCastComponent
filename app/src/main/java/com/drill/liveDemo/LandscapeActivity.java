@@ -4,6 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,6 +44,7 @@ import android.os.Build;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
+import com.baidu.location.LocationClientOption;
 import com.google.zxing.client.android.CaptureActivity;
 import com.google.zxing.client.android.Intents;
 import com.laifeng.sopcastsdk.camera.CameraListener;
@@ -169,6 +172,10 @@ public class LandscapeActivity extends Activity {
     private int totalCount = 3;
     private int recoveryDuration = 30;
     private int totalDuration = 60;
+
+    private NotificationUtils mNotificationUtils;
+    private Notification notification;
+
 
     private Handler cameraHandler = new Handler() {
         @Override
@@ -455,10 +462,37 @@ public class LandscapeActivity extends Activity {
         mtype = -1;
 
         //获取locationservice实例，建议应用中只初始化1个location实例，然后使用，可以参考其他示例的activity，都是通过此种方式获取locationservice实例的
-        ((myApplication) getApplication()).mlocationService.registerListener(mListener);
-        ((myApplication) getApplication()).mlocationService.setLocationOption(((myApplication) getApplication()).mlocationService.getDefaultLocationClientOption());
+        LocationClientOption mOption = new LocationClientOption();
+        mOption.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy); // 可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
+        mOption.setCoorType( "bd09ll" ); // 可选，默认gcj02，设置返回的定位结果坐标系，如果配合百度地图使用，建议设置为bd09ll;
+        mOption.setScanSpan(1000); // 可选，默认0，即仅定位一次，设置发起连续定位请求的间隔需要大于等于1000ms才是有效的
+        mOption.setIsNeedAddress(true); // 可选，设置是否需要地址信息，默认不需要
+        mOption.setIsNeedLocationDescribe(false); // 可选，设置是否需要地址描述
+        mOption.setNeedDeviceDirect(false); // 可选，设置是否需要设备方向结果
+        mOption.setLocationNotify(true); // 可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
+        mOption.setIgnoreKillProcess(false); // 可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop
+        mOption.setIsNeedLocationDescribe(false); // 可选，默认false，设置是否需要位置语义化结果，可以在BDLocation
+        mOption.setIsNeedLocationPoiList(false); // 可选，默认false，设置是否需要POI结果，可以在BDLocation
+        mOption.SetIgnoreCacheException(false); // 可选，默认false，设置是否收集CRASH信息，默认收集
+        mOption.setOpenGps(true); // 可选，默认false，设置是否开启Gps定位
+        mOption.setIsNeedAltitude(true); // 可选，默认false，设置定位时是否需要海拔信息，默认不需要，除基础定位版本都可用
+        mOption.setNeedNewVersionRgc(true);
+        mOption.setWifiCacheTimeOut(1000);
+        ((myApplication) getApplication()).mClient.setLocOption(mOption);
+        ((myApplication) getApplication()).mClient.registerLocationListener(mListener);
 
-        ((myApplication) getApplication()).mlocationService.start();
+        //设置后台定位
+        //android8.0及以上使用NotificationUtils
+        if (Build.VERSION.SDK_INT >= 26) {
+            mNotificationUtils = new NotificationUtils(this);
+            Notification.Builder builder2 = mNotificationUtils.getAndroidChannelNotification
+                    ("适配android 8限制后台定位功能", "正在后台定位");
+            notification = builder2.build();
+        }
+        notification.defaults = Notification.DEFAULT_SOUND; //设置为默认的声音
+
+        ((myApplication) getApplication()).mClient.enableLocInForeground(1, notification);
+        ((myApplication) getApplication()).mClient.start();
         Log.e(TAG, "初始化,打开GPS!");
         mGpsStarted = true;
 
@@ -996,13 +1030,17 @@ public class LandscapeActivity extends Activity {
         if(gpsEnable) {
             if(!mGpsStarted){
                 mGpsStarted = true;
-                ((myApplication) getApplication()).mlocationService.start();
+                ((myApplication) getApplication()).mClient.enableLocInForeground(1, notification);
+
+                ((myApplication) getApplication()).mClient.start();
                 Log.e(TAG, "开关打开GPS!");
                 Toast.makeText(LandscapeActivity.this, "打开GPS!", Toast.LENGTH_SHORT).show();
             }
         }else{
             mGpsStarted = false;
-            ((myApplication) getApplication()).mlocationService.stop();
+            ((myApplication) getApplication()).mClient.disableLocInForeground(true);
+
+            ((myApplication) getApplication()).mClient.stop();
             mDescribe = "远程关闭GPS，请在控制台打开";
             Log.e(TAG, "开关关闭GPS!");
             Toast.makeText(LandscapeActivity.this, "关闭GPS!", Toast.LENGTH_SHORT).show();
@@ -1352,12 +1390,16 @@ public class LandscapeActivity extends Activity {
             mLFLiveView.release();
         }
 
+        // 关闭前台定位服务
+        ((myApplication) getApplication()).mClient.disableLocInForeground(true);
+        // 取消之前注册的 BDAbstractLocationListener 定位监听函数
+        ((myApplication) getApplication()).mClient.unRegisterLocationListener(mListener);
+        //停止定位服务
         if(mGpsStarted){
-            ((myApplication) getApplication()).mlocationService.stop();
+            ((myApplication) getApplication()).mClient.stop();
             mGpsStarted = false;
 
         }
-        ((myApplication) getApplication()).mlocationService.unregisterListener(mListener);
 
         //关闭上报定时器
         if (uploaderScheduleManager != null)
