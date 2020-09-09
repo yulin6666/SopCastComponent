@@ -19,6 +19,7 @@ import android.net.NetworkInfo;
 import android.nfc.Tag;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -176,6 +177,8 @@ public class LandscapeActivity extends Activity {
     private NotificationUtils mNotificationUtils;
     private Notification notification;
 
+    private PowerManager.WakeLock mWakeLock;
+
 
     private Handler cameraHandler = new Handler() {
         @Override
@@ -332,6 +335,8 @@ public class LandscapeActivity extends Activity {
 
     private void init() {
 
+        activeWeakLock();
+
         mStatus = "初始化";//当前状态
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
@@ -444,6 +449,13 @@ public class LandscapeActivity extends Activity {
             e.printStackTrace();
         }
         return versionCode;
+    }
+
+    private void activeWeakLock(){
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK , "GPS");
+        mWakeLock.acquire();
     }
 
     private void initGps() {
@@ -1412,6 +1424,8 @@ public class LandscapeActivity extends Activity {
             controlScheduleManager.cancel(true);
             controlScheduleManager = null;
         }
+
+        mWakeLock.release();
 
     }
 
