@@ -11,17 +11,16 @@ import com.laifeng.sopcastsdk.stream.amf.AmfString;
 import com.laifeng.sopcastsdk.stream.packer.rtmp.RtmpPacker;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.Abort;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.Audio;
+import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.Chunk;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.ChunkHeader;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.Command;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.Data;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.Handshake;
-import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.Chunk;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.MessageType;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.UserControl;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.Video;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.packets.WindowAckSize;
 import com.laifeng.sopcastsdk.stream.sender.sendqueue.ISendQueue;
-import com.laifeng.sopcastsdk.stream.sender.sendqueue.NormalSendQueue;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -37,7 +36,7 @@ import java.util.regex.Pattern;
 
 /**
  * Main RTMP connection implementation class
- * 
+ *
  * @author francois, leoma
  */
 public class RtmpConnection implements OnReadListener, OnWriteListener {
@@ -92,8 +91,8 @@ public class RtmpConnection implements OnReadListener, OnWriteListener {
     public void connect(String url) {
         state = State.INIT;
         connectData = parseRtmpUrl(url);
-        if(connectData == null) {
-            if(listener != null) {
+        if (connectData == null) {
+            if (listener != null) {
                 listener.onUrlInvalid();
             }
             return;
@@ -109,12 +108,12 @@ public class RtmpConnection implements OnReadListener, OnWriteListener {
             socket.connect(socketAddress, 3000);
         } catch (IOException e) {
             e.printStackTrace();
-            if(listener != null) {
+            if (listener != null) {
                 listener.onSocketConnectFail();
             }
             return;
         }
-        if(listener != null) {
+        if (listener != null) {
             listener.onSocketConnectSuccess();
         }
         BufferedInputStream in = null;
@@ -129,12 +128,12 @@ public class RtmpConnection implements OnReadListener, OnWriteListener {
             e.printStackTrace();
             state = State.INIT;
             clearSocket();
-            if(listener != null) {
+            if (listener != null) {
                 listener.onHandshakeFail();
             }
             return;
         }
-        if(listener != null) {
+        if (listener != null) {
             listener.onHandshakeSuccess();
         }
         sessionInfo = new SessionInfo();
@@ -219,14 +218,14 @@ public class RtmpConnection implements OnReadListener, OnWriteListener {
                 break;
             case USER_CONTROL_MESSAGE:
                 UserControl ping = (UserControl) chunk;
-                if(ping.getType() == UserControl.Type.PING_REQUEST) {
+                if (ping.getType() == UserControl.Type.PING_REQUEST) {
                     Log.d(TAG, "Sending PONG reply..");
                     UserControl pong = new UserControl();
                     pong.setType(UserControl.Type.PONG_REPLY);
                     pong.setEventData(ping.getEventData()[0]);
                     Frame<Chunk> frame = new Frame(pong, RtmpPacker.CONFIGRATION, Frame.FRAME_TYPE_CONFIGURATION);
                     mSendQueue.putFrame(frame);
-                } else if(ping.getType() == UserControl.Type.STREAM_EOF) {
+                } else if (ping.getType() == UserControl.Type.STREAM_EOF) {
                     Log.d(TAG, "Stream EOF reached");
                 }
                 break;
@@ -260,50 +259,50 @@ public class RtmpConnection implements OnReadListener, OnWriteListener {
 
     private void handleRxCommandInvoke(Command command) {
         String commandName = command.getCommandName();
-        if(commandName.equals("_result")) {
+        if (commandName.equals("_result")) {
             String method = sessionInfo.takeInvokedCommand(command.getTransactionId());
             Log.d(TAG, "Got result for invoked method: " + method);
             if ("connect".equals(method)) {
-                if(listener != null) {
+                if (listener != null) {
                     listener.onRtmpConnectSuccess();
                 }
                 createStream();
-            } else if("createStream".equals(method)) {
+            } else if ("createStream".equals(method)) {
                 currentStreamId = (int) ((AmfNumber) command.getData().get(1)).getValue();
-                if(listener != null) {
+                if (listener != null) {
                     listener.onCreateStreamSuccess();
                 }
                 fmlePublish();
             }
-        } else if(commandName.equals("_error")) {
+        } else if (commandName.equals("_error")) {
             String method = sessionInfo.takeInvokedCommand(command.getTransactionId());
             Log.d(TAG, "Got error for invoked method: " + method);
             if ("connect".equals(method)) {
                 stop();
-                if(listener != null) {
+                if (listener != null) {
                     listener.onRtmpConnectFail();
                 }
-            } else if("createStream".equals(method)) {
+            } else if ("createStream".equals(method)) {
                 stop();
-                if(listener != null) {
+                if (listener != null) {
                     listener.onCreateStreamFail();
                 }
             }
-        } else if(commandName.equals("onStatus")) {
+        } else if (commandName.equals("onStatus")) {
             String code = ((AmfString) ((AmfObject) command.getData().get(1)).getProperty("code")).getValue();
             if (code.equals("NetStream.Publish.Start")) {
                 Log.d(TAG, "Got publish start success");
                 state = State.LIVING;
-                if(listener != null) {
+                if (listener != null) {
                     listener.onPublishSuccess();
                 }
                 onMetaData();
                 // We can now publish AV data
                 publishPermitted = true;
             } else {
-                Log.d(TAG, "Got publish start fail");
+                Log.e(TAG, "Got publish start fail code=" + code);
                 stop();
-                if(listener != null) {
+                if (listener != null) {
                     listener.onPublishFail();
                 }
             }
@@ -404,7 +403,7 @@ public class RtmpConnection implements OnReadListener, OnWriteListener {
         audio.setData(data);
         audio.getChunkHeader().setMessageStreamId(currentStreamId);
         Frame<Chunk> frame;
-        if(type == RtmpPacker.FIRST_AUDIO) {
+        if (type == RtmpPacker.FIRST_AUDIO) {
             frame = new Frame(audio, type, Frame.FRAME_TYPE_CONFIGURATION);
         } else {
             frame = new Frame(audio, type, Frame.FRAME_TYPE_AUDIO);
@@ -423,9 +422,9 @@ public class RtmpConnection implements OnReadListener, OnWriteListener {
         video.setData(data);
         video.getChunkHeader().setMessageStreamId(currentStreamId);
         Frame<Chunk> frame;
-        if(type == RtmpPacker.FIRST_VIDEO) {
+        if (type == RtmpPacker.FIRST_VIDEO) {
             frame = new Frame(video, type, Frame.FRAME_TYPE_CONFIGURATION);
-        } else if(type == RtmpPacker.KEY_FRAME){
+        } else if (type == RtmpPacker.KEY_FRAME) {
             frame = new Frame(video, type, Frame.FRAME_TYPE_KEY_FRAME);
         } else {
             frame = new Frame(video, type, Frame.FRAME_TYPE_INTER_FRAME);
@@ -451,11 +450,11 @@ public class RtmpConnection implements OnReadListener, OnWriteListener {
 
     public void stop() {
         closeStream();
-        if(readThread != null) {
+        if (readThread != null) {
             readThread.setOnReadListener(null);
             readThread.shutdown();
         }
-        if(writeThread != null) {
+        if (writeThread != null) {
             writeThread.setWriteListener(null);
             writeThread.shutdown();
         }
@@ -473,7 +472,7 @@ public class RtmpConnection implements OnReadListener, OnWriteListener {
     @Override
     public void onStreamEnd() {
         stop();
-        if(listener != null) {
+        if (listener != null) {
             listener.onStreamEnd();
         }
     }
@@ -481,7 +480,7 @@ public class RtmpConnection implements OnReadListener, OnWriteListener {
     @Override
     public void onDisconnect() {
         stop();
-        if(listener != null) {
+        if (listener != null) {
             listener.onSocketDisconnect();
         }
     }

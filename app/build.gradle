@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         release {
-            storeFile file('/Users/yulin9/Documents/DrillLive')
+            storeFile file('DrillLive')
             storePassword "1234567"
             keyPassword "1234567"
             keyAlias "DrillLive"
