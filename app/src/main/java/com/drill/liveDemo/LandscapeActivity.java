@@ -571,6 +571,11 @@ public class LandscapeActivity extends Activity {
     }
 
     private void createUploadPool() {
+
+        //防止多个线程启动
+        if (uploaderScheduleManager != null) {
+            uploaderScheduleManager.cancel(true);
+        }
         uploaderScheduleExecutor = Executors.newScheduledThreadPool(5);
         uploaderTimeTask = new Runnable() {
             @Override
@@ -1031,22 +1036,26 @@ public class LandscapeActivity extends Activity {
 
     private void openGps(boolean gpsEnable) {
         if (gpsEnable) {
-            if (!mGpsStarted) {
-                mGpsStarted = true;
+            if (!mGpsStarted) {//打开GPS
+                ((myApplication) getApplication()).mClient.registerLocationListener(mListener);
                 ((myApplication) getApplication()).mClient.enableLocInForeground(1, notification);
-
                 ((myApplication) getApplication()).mClient.start();
+                mGpsStarted = true;
                 Log.e(TAG, "开关打开GPS!");
                 Toast.makeText(LandscapeActivity.this, "打开GPS!", Toast.LENGTH_SHORT).show();
             }
         } else {
-            mGpsStarted = false;
-            ((myApplication) getApplication()).mClient.disableLocInForeground(true);
 
-            ((myApplication) getApplication()).mClient.stop();
-            mDescribe = "远程关闭GPS，请在控制台打开";
-            Log.e(TAG, "开关关闭GPS!");
-            Toast.makeText(LandscapeActivity.this, "关闭GPS!", Toast.LENGTH_SHORT).show();
+            if(mGpsStarted){
+                ((myApplication) getApplication()).mClient.disableLocInForeground(true);
+                ((myApplication) getApplication()).mClient.unRegisterLocationListener(mListener);
+                ((myApplication) getApplication()).mClient.stop();
+                mGpsStarted = false;
+                mDescribe = "远程关闭GPS，请在控制台打开";
+                Log.e(TAG, "开关关闭GPS!");
+                Toast.makeText(LandscapeActivity.this, "关闭GPS!", Toast.LENGTH_SHORT).show();
+            }
+
 
         }
         //sendRefreshMessage();
@@ -1446,8 +1455,6 @@ public class LandscapeActivity extends Activity {
 
 
     private void uploadInfo() {
-        new Thread(new Runnable() {
-            public void run() {
                 //发送到服务器
                 if (!gpsUploadUrl.isEmpty()) {
                     sendDirectToServer();
@@ -1502,7 +1509,7 @@ public class LandscapeActivity extends Activity {
                     if (response.getStatusLine().getStatusCode() == 200) {
 
                     }
-                    Log.e(TAG, String.format("gps: sendtoManager result:%d,mlongitude:%f", response.getStatusLine().getStatusCode(), mlongitude));
+                    Log.e(TAG, String.format("gps: sendtoManager result:%d,mlongitude:%f,mlatitude:%f", response.getStatusLine().getStatusCode(), mlongitude,mlatitude));
 
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
@@ -1510,11 +1517,7 @@ public class LandscapeActivity extends Activity {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
-                ;
-
-            }
-        }).start();
+                };
 
     }
 
@@ -1549,7 +1552,7 @@ public class LandscapeActivity extends Activity {
 
             if (response.getStatusLine().getStatusCode() == 200) {
             }
-            Log.e(TAG, String.format("gps: sendDirectToServer result:%d,mlongitude:%f", response.getStatusLine().getStatusCode(), mlongitude));
+            Log.e(TAG, String.format("gps: sendDirectToServer result:%d,mlongitude:%f,mlatitude:%f,speed:%f", response.getStatusLine().getStatusCode(), mlongitude,mlatitude,mSpeed));
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
