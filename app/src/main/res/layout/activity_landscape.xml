@@ -88,4 +88,17 @@
         android:layout_below="@+id/version_view"
         android:textSize="5dp"
         android:text=""/>
+
+    <com.arlib.floatingsearchview.FloatingSearchView
+        android:id="@+id/floating_search_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:floatingSearch_searchHint="Search..."
+        app:floatingSearch_searchBarMarginLeft="20dp"
+        app:floatingSearch_searchBarMarginTop="20dp"
+        app:floatingSearch_searchBarMarginRight="20dp"
+        app:floatingSearch_suggestionsListAnimDuration="250"
+        app:floatingSearch_showSearchKey="false"
+        app:floatingSearch_leftActionMode="showSearch"
+        app:floatingSearch_close_search_on_keyboard_dismiss="true"/>
 </RelativeLayout>
