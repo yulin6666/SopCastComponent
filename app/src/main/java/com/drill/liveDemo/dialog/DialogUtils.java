@@ -131,6 +131,12 @@ public class DialogUtils extends DialogFragment {
         return createDialog2(activity, title, null, customView, cancelButton, doneButton1, cancelable, listener);
     }
 
+    public static Dialog createCustomDialog3(Context activity, String title, View customView ,String cancelButton,
+                                             String doneButton1, boolean cancelable, final DialogListener listener) {
+        return createDialog3(activity, title, null, customView, cancelButton, doneButton1, cancelable, listener);
+    }
+
+
     private static Dialog createDialog0(Context activity, String title,String doneButton1, String doneButton2, boolean cancelable,
                                         final DialogListener listener) {
         if (activity == null)
@@ -340,6 +346,71 @@ public class DialogUtils extends DialogFragment {
         return dialog;
     }
 
+    private static Dialog createDialog3(Context activity, String title, String message, View customView,
+                                        String cancelButton, String doneButton1, boolean cancelable,
+                                        final DialogListener listener) {
+        if (activity == null)
+            return null;
+
+        LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View myCustomView = inflater.inflate(R.layout.dialog_display3_layout, null);
+        TextView tvTitle = (TextView) myCustomView.findViewById(R.id.tv_title);
+        Button btnNegative = (Button) myCustomView.findViewById(R.id.btn_negative);
+        Button btnPositive1 = (Button) myCustomView.findViewById(R.id.btn_positive1);
+        ViewGroup dialogContent = (ViewGroup) myCustomView.findViewById(R.id.dialog_content);
+
+        final Dialog dialog = DialogUtils.createSimpleDialog(activity, myCustomView, cancelable);
+
+        //Define my dialog width
+        int width = DeviceUtils.getDeviceScreenWidth(activity) - 100;
+        ViewGroup.LayoutParams params = myCustomView.getLayoutParams();
+        params.width = width;
+        myCustomView.setLayoutParams(params);
+
+        //Title
+        if (title != null && !title.equals("")) {
+            tvTitle.setText(title);
+        }
+
+        //Custom View
+        if (customView != null ) {
+            dialogContent.addView(customView);
+        }
+
+        //Negative button
+        if (cancelButton != null && !cancelButton.equals("")) {
+            btnNegative.setText(cancelButton);
+            btnNegative.setVisibility(View.VISIBLE);
+            btnNegative.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (dialog != null && dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
+                    if (listener != null) {
+                        listener.onNegativeButton();
+                    }
+                }
+            });
+        }
+        //Positive button
+        if (doneButton1 != null && !doneButton1.equals("")) {
+            btnPositive1.setText(doneButton1);
+            btnPositive1.setVisibility(View.VISIBLE);
+            btnPositive1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (dialog != null && dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
+                    if (listener != null) {
+                        listener.onPositiveButton1();
+                    }
+                }
+            });
+        }
+        return dialog;
+    }
 
     /**
      * dummy menu dialog :D

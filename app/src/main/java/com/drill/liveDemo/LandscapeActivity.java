@@ -3,6 +3,7 @@ package com.drill.liveDemo;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Notification;
 import android.content.Context;
@@ -584,7 +585,7 @@ public class LandscapeActivity extends Activity {
         mProgressConnecting = (ProgressBar) findViewById(R.id.progressConnecting);
 
         //displayInitDialog();
-        initSearchView();
+        //initSearchView();
     }
 
     private void initSearchView(){
@@ -601,6 +602,54 @@ public class LandscapeActivity extends Activity {
 //            }
 //
 //        });
+    }
+
+    private void displayScanDialog(String content) {
+        String title = "二维码内容";
+        String cancelButton= "否";
+        String doneButton1 = "是";
+
+        LayoutInflater inflater = getLayoutInflater();
+        View customView = inflater.inflate(R.layout.dialog_item_layout2,null);
+
+        String message = content;
+        TextView messageTextView = (TextView)customView.findViewById(R.id.message1);
+        messageTextView.setText(message);
+
+        ImageView imageView=(ImageView) customView.findViewById(R.id.dialog_image_view);
+        imageView.setImageDrawable(getResources().getDrawable(R.drawable.duijiang));
+
+        String message2 = "是否核验通过？";
+        TextView messageTextView2 = (TextView)customView.findViewById(R.id.message2);
+        messageTextView2.setText(message2);
+
+        Dialog myDialog = DialogUtils.createCustomDialog3(this, title,customView,
+                cancelButton,doneButton1, false, new DialogUtils.DialogListener() {
+                    @Override
+                    public void onPositiveButton1() {
+                        showResultDialog("核验成功！");
+                    }
+                    @Override
+                    public void onPositiveButton2() {
+                    }
+
+                    @Override
+                    public void onNegativeButton() {
+                        showResultDialog("核验失败！");
+                    }
+                });
+
+        if (myDialog != null && !myDialog.isShowing()) {
+            myDialog.show();
+        }
+    }
+
+    private void showResultDialog(String result){
+        new AlertDialog.Builder(this)
+                .setTitle("核验结果")
+                .setMessage(result)
+                .setPositiveButton("确定", null)
+                .show();
     }
 
     private void displayInitDialog(){
@@ -1874,6 +1923,10 @@ public class LandscapeActivity extends Activity {
                 mScanContent = data.getStringExtra(Intents.Scan.RESULT);
                 Log.d("", String.format("结果为:%s", mScanContent));
 
+                if(mScanContent.contains("设备类型")){
+                    displayScanDialog(mScanContent);
+                }
+
                 new Thread(new Runnable() {
                     public void run() {
                         String uriAPI = "http://" + mip + "/api/newScanningMessage?deviceID=" + mdeviceID;
@@ -1890,7 +1943,7 @@ public class LandscapeActivity extends Activity {
                         try {
                             entity = new UrlEncodedFormEntity(params, "utf-8");
                             httpPost.setEntity(entity);
-                            response = postClient.execute(httpPost);
+                           response = postClient.execute(httpPost);
 
                             if (response.getStatusLine().getStatusCode() == 200) {
                                 runOnUiThread(new Runnable() {
