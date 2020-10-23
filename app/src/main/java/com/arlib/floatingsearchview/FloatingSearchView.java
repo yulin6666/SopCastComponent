@@ -1553,17 +1553,17 @@ public class FloatingSearchView extends FrameLayout {
                 }
                 break;
             case LEFT_ACTION_MODE_SHOW_SEARCH:
-                mLeftAction.setImageDrawable(mIconBackArrow);
-                if (withAnim) {
-                    mLeftAction.setRotation(45);
-                    mLeftAction.setAlpha(0.0f);
-                    ObjectAnimator rotateAnim = ViewPropertyObjectAnimator.animate(mLeftAction).rotation(0).get();
-                    ObjectAnimator fadeAnim = ViewPropertyObjectAnimator.animate(mLeftAction).alpha(1.0f).get();
-                    AnimatorSet animSet = new AnimatorSet();
-                    animSet.setDuration(500);
-                    animSet.playTogether(rotateAnim, fadeAnim);
-                    animSet.start();
-                }
+                //mLeftAction.setImageDrawable(mIconBackArrow);
+//                if (withAnim) {
+//                    mLeftAction.setRotation(45);
+//                    mLeftAction.setAlpha(0.0f);
+//                    ObjectAnimator rotateAnim = ViewPropertyObjectAnimator.animate(mLeftAction).rotation(0).get();
+//                    ObjectAnimator fadeAnim = ViewPropertyObjectAnimator.animate(mLeftAction).alpha(1.0f).get();
+//                    AnimatorSet animSet = new AnimatorSet();
+//                    animSet.setDuration(500);
+//                    animSet.playTogether(rotateAnim, fadeAnim);
+//                    animSet.start();
+//                }
                 break;
             case LEFT_ACTION_MODE_SHOW_HOME:
                 //do nothing

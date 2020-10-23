@@ -585,23 +585,23 @@ public class LandscapeActivity extends Activity {
         mProgressConnecting = (ProgressBar) findViewById(R.id.progressConnecting);
 
         //displayInitDialog();
-        //initSearchView();
+        initSearchView();
     }
 
     private void initSearchView(){
-//        mSearchView = (com.arlib.floatingsearchview.FloatingSearchView)findViewById(R.id.floating_search_view);
-//
-//        mSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
-//            @Override
-//            public void onSearchTextChanged(String oldQuery, final String newQuery) {
-//
-//                //get suggestions based on newQuery
-//                Toast.makeText(LandscapeActivity.this, newQuery, Toast.LENGTH_SHORT).show();
-//                //pass them on to the search view
-//
-//            }
-//
-//        });
+        mSearchView = (com.arlib.floatingsearchview.FloatingSearchView)findViewById(R.id.floating_search_view);
+
+        mSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
+            @Override
+            public void onSearchTextChanged(String oldQuery, final String newQuery) {
+
+                //get suggestions based on newQuery
+                Toast.makeText(LandscapeActivity.this, newQuery, Toast.LENGTH_SHORT).show();
+                //pass them on to the search view
+
+            }
+
+        });
     }
 
     private void displayScanDialog(String content) {
