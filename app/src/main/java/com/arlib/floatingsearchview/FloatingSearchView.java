@@ -1483,7 +1483,7 @@ public class FloatingSearchView extends FrameLayout {
             handleOnVisibleMenuItemsWidthChanged(0);//this must be called before  mMenuView.hideIfRoomItems(...)
             mMenuView.hideIfRoomItems(true);
             transitionInLeftSection(true);
-            Util.showSoftKeyboard(getContext(), mSearchInput);
+//            Util.showSoftKeyboard(getContext(), mSearchInput);
             if (mMenuOpen) {
                 closeMenu(false);
             }
@@ -1496,9 +1496,9 @@ public class FloatingSearchView extends FrameLayout {
             mSearchInput.setLongClickable(true);
             mClearButton.setVisibility((mSearchInput.getText().toString().length() == 0) ?
                     View.INVISIBLE : View.VISIBLE);
-            if (mFocusChangeListener != null) {
-                mFocusChangeListener.onFocus();
-            }
+//            if (mFocusChangeListener != null) {
+//                mFocusChangeListener.onFocus();
+//            }
         } else {
             mMainLayout.requestFocus();
             clearSuggestions();

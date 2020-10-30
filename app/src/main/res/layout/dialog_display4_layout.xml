@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/dialog_bg_cover">
 
+
     <TextView
         android:id="@+id/tv_title"
         style="@style/dialog_title"
@@ -12,10 +13,11 @@
         android:layout_height="wrap_content"
         android:text="Adding To Favorite"/>
 
-    <FrameLayout
-        android:id="@+id/dialog_content"
+    <ListView
+        android:id="@+id/listview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent"
+        ></ListView>
 
     <LinearLayout
         android:layout_below="@id/tv_message"
@@ -43,14 +45,6 @@
             android:visibility="visible"
             android:text="Yes"/>
 
-        <Button
-            android:id="@+id/btn_positive2"
-            style="@style/dialog_button_positive"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/font_medium"
-            android:visibility="visible"
-            android:text="Yes"/>
     </LinearLayout>
+
 </LinearLayout>
