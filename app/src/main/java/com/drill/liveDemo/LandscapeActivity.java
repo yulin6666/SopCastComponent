@@ -740,7 +740,7 @@ public class LandscapeActivity extends Activity {
                 .show();
     }
 
-    private void displayInitDialog(final String fidInfo){
+    private void displayInitDialog(final String fidInfo,final String id){
         String title = "执法选择框";
         String positiveButton1= "执法前";
         String positiveButton2 = "执法后";
@@ -751,13 +751,13 @@ public class LandscapeActivity extends Activity {
                         public void onPositiveButton1() {
                             Toast.makeText(LandscapeActivity.this, "正在请求服务器，请等待", Toast.LENGTH_SHORT).show();
 
-                            getQueryInfo(fidInfo,0);
+                            getQueryInfo(fidInfo,id,0);
                         }
                         @Override
                         public void onPositiveButton2() {
                             Toast.makeText(LandscapeActivity.this, "正在请求服务器，请等待", Toast.LENGTH_SHORT).show();
 
-                            getQueryInfo(fidInfo,1);
+                            getQueryInfo(fidInfo,id,1);
                         }
 
                         @Override
@@ -1790,12 +1790,14 @@ public class LandscapeActivity extends Activity {
     }
 
 
-    private void getQueryInfo(final String fid,final int before) {
+    private void getQueryInfo(final String fid,final String id,final int before) {
 
         new Thread(new Runnable() {
        @Override
             public void run() {
-                String url = queryUrl + "?fid="+fid;
+
+                String url = queryUrl+"?fid="+fid+"&id="+id;
+
                 String fidInfo = httpGet(url);
 
                 if(before == 0){
@@ -2042,8 +2044,28 @@ public class LandscapeActivity extends Activity {
                     displayScanDialog(mScanContent);
                 }
 
-                if(mScanContent.contains("fid:")){
-                    displayInitDialog(mScanContent.substring(4));
+                if(mScanContent.contains("fid")){
+
+                try{
+                    String fid ="";
+                    String id ="";
+
+                    JSONObject scanContent = new JSONObject(mScanContent);//转换为JSONObject
+                    Iterator<?> it = scanContent.keys();
+                    String key = "";
+                    while(it.hasNext()) {//遍历JSONObject
+                        key = (String) it.next().toString();
+                        if(key.equals("fid")){
+                            fid = scanContent.getString("fid");
+                        }else if(key.equals("id")){
+                            id = scanContent.getString("id");
+                        }
+                    }
+                    displayInitDialog(fid,id);
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+
                 }
 
                 new Thread(new Runnable() {
