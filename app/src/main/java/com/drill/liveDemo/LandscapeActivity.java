@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
+import android.renderscript.Sampler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
@@ -49,7 +50,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
-import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClientOption;
@@ -57,7 +57,9 @@ import com.drill.liveDemo.dialog.DialogUtils;
 import com.drill.liveDemo.dialog.deviceInfo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.google.zxing.client.android.CaptureActivity;
+import com.google.zxing.client.android.Contents;
 import com.google.zxing.client.android.Intents;
 import com.laifeng.sopcastsdk.camera.CameraListener;
 import com.laifeng.sopcastsdk.configuration.AudioConfiguration;
@@ -79,6 +81,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -86,13 +89,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -142,6 +148,7 @@ public class LandscapeActivity extends Activity {
 
     private String gpsUploadUrl = "";
     private String scanUploadUrl = "";
+    private String queryUrl ="";
 
     //动态配置信息
     private int mInterval;//上报间隔时间
@@ -184,7 +191,8 @@ public class LandscapeActivity extends Activity {
 
     String[] testData = new String[10];
     com.arlib.floatingsearchview.FloatingSearchView mSearchView;
-    private String queryInfo = "";
+    private String queryKeyWord = "";
+    private String fidInfo = "";
 
     private Handler cameraHandler = new Handler() {
         @Override
@@ -231,6 +239,12 @@ public class LandscapeActivity extends Activity {
                 case 10://更新UI
                     mScanButton.setEnabled(true);
                     mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
+                    break;
+                case 11://执法前显示info
+                    processFidInfo((String)msg.obj,0);
+                    break;
+                case 12:
+                    processFidInfo((String)msg.obj,1);
                     break;
                 default:
                     break;
@@ -347,20 +361,8 @@ public class LandscapeActivity extends Activity {
                 "\"copName\":\"申请单位名称\"," +
                 "\"copCont\":\"申请单位联系人\"," +
                 "\"copTel\":\"申请单位\"," +
-                "\"simg\": [" +
-                "{"+
-                "\"name\": \"图片名称\"," +
-                "\"value\":\"" + imageValue + "\"" +
-                "}," +
-                "{"+
-                "\"name\": \"图片名称\"," +
-                "\"value\":\"" + imageValue + "\"" +
-                "}," +
-                "{"+
-                "\"name\": \"图片名称\"," +
-                "\"value\":\"" + imageValue + "\"" +
-                "}" +
-                "]" +
+                "\"testi\":10," +
+                "\"testf\":10.0"+
                 "}";
         testData[0]= json;
     }
@@ -616,7 +618,6 @@ public class LandscapeActivity extends Activity {
 //        mbackBtn = (ImageButton) findViewById(R.id.backBtn);
         mProgressConnecting = (ProgressBar) findViewById(R.id.progressConnecting);
 
-        //displayInitDialog();
         initSearchView();
     }
 
@@ -628,7 +629,7 @@ public class LandscapeActivity extends Activity {
             public void onSearchTextChanged(String oldQuery, final String newQuery) {
 
                 //get suggestions based on newQuery
-                queryInfo = newQuery;
+                queryKeyWord = newQuery;
                 //pass them on to the search view
 
             }
@@ -739,7 +740,7 @@ public class LandscapeActivity extends Activity {
                 .show();
     }
 
-    private void displayInitDialog(){
+    private void displayInitDialog(final String fidInfo){
         String title = "执法选择框";
         String positiveButton1= "执法前";
         String positiveButton2 = "执法后";
@@ -748,17 +749,15 @@ public class LandscapeActivity extends Activity {
                      positiveButton1,positiveButton2, false, new DialogUtils.DialogListener() {
                         @Override
                         public void onPositiveButton1() {
-                            Toast.makeText(LandscapeActivity.this, "执法前", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LandscapeActivity.this, "正在请求服务器，请等待", Toast.LENGTH_SHORT).show();
 
-
-                            DisplayDialog(testData[0],1);
+                            getQueryInfo(fidInfo,0);
                         }
                         @Override
                         public void onPositiveButton2() {
-                            Toast.makeText(LandscapeActivity.this, "执法后", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LandscapeActivity.this, "正在请求服务器，请等待", Toast.LENGTH_SHORT).show();
 
-
-                            DisplayDialog(testData[0],2);
+                            getQueryInfo(fidInfo,1);
                         }
 
                         @Override
@@ -772,12 +771,7 @@ public class LandscapeActivity extends Activity {
         }
     }
 
-    private void DisplayDialog(String json,int type){
-
-        Gson gson = new GsonBuilder().create();
-        deviceInfo info = gson.fromJson(json, deviceInfo.class);
-        String message = String.format("stype:%s\nsname:%s\nsmodel:%s\nsfreq:%s\ncopName:%s\ncopCont:%s\ncopTel:%s",info.stype,info.sname,info.smodel,info.sfreq,info.copName,info.copCont,info.copTel);
-
+    private void DisplayDialog(String jsonString,int type){
 
         String title;
         String negativeButton = "取消";
@@ -795,23 +789,68 @@ public class LandscapeActivity extends Activity {
 
         LayoutInflater inflater = getLayoutInflater();
         View customView = inflater.inflate(R.layout.dialog_item_layout,null);
+        String message= "";
+        try {
+            JSONObject result = new JSONObject(jsonString);//转换为JSONObject
+            Iterator<?> it = result.keys();
+            String key = "";
+            while(it.hasNext()){//遍历JSONObject
+                key = (String) it.next().toString();
+                Object valueObj = result.get(key);
+                if(valueObj instanceof String){
+                    message += key;
+                    message += ":";
+                    message += (String)valueObj;
+                    message += "\n";
+                }else if(valueObj instanceof JSONArray){
+                    //图片数据
+                    if(key.equals("simg")){
+                        JSONArray images = (JSONArray)valueObj;
+                        int n = images.length();
+                        for(int i=0;i<n;i++){
+                            //循环导入图片
+                            LinearLayout ll_parent=(LinearLayout) customView.findViewById(R.id.ll_parent);
+                            View imageDyView= inflater.inflate(R.layout.dialoag_item_image_layout, null);
+                            ll_parent.addView(imageDyView);
+                            //导入图片数据
+                            String base64 = images.getString(i);
+                            byte[] decodedString = Base64.decode(base64, Base64.DEFAULT);
+                            ImageView imageView = imageDyView.findViewById(R.id.dialog_image_view);
+                            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                            imageView.setImageBitmap(decodedByte);
+                        }
+                    }
+                }else if(valueObj instanceof Integer
+                        ||valueObj instanceof Float || valueObj instanceof Double){
+                    message += key;
+                    message += key;
+                    message += ":";
+                    String value = String.valueOf(valueObj);
+                    message += value;
+                    message += "\n";
+                }
+            }
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
 
         //导入文本
         TextView messageTextView = (TextView)customView.findViewById(R.id.dialogJsonTextId);
         messageTextView.setText(message);
 
         //循环导入图片
-        for(int i=0;i<info.simg.size();i++){
-            LinearLayout ll_parent=(LinearLayout) customView.findViewById(R.id.ll_parent);
-            View imageDyView= inflater.inflate(R.layout.dialoag_item_image_layout, null);
-            ll_parent.addView(imageDyView);
-            //导入图片数据
-            String base64 = info.simg.get(i).value;
-            byte[] decodedString = Base64.decode(base64, Base64.DEFAULT);
-            ImageView imageView = imageDyView.findViewById(R.id.dialog_image_view);
-            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-            imageView.setImageBitmap(decodedByte);
-        }
+//        for(int i=0;i<info.simg.size();i++){
+//            LinearLayout ll_parent=(LinearLayout) customView.findViewById(R.id.ll_parent);
+//            View imageDyView= inflater.inflate(R.layout.dialoag_item_image_layout, null);
+//            ll_parent.addView(imageDyView);
+//            //导入图片数据
+//            String base64 = info.simg.get(i).value;
+//            byte[] decodedString = Base64.decode(base64, Base64.DEFAULT);
+//            ImageView imageView = imageDyView.findViewById(R.id.dialog_image_view);
+//            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+//            imageView.setImageBitmap(decodedByte);
+//        }
 
         Dialog myDialog ;
         if(type == 1){
@@ -886,8 +925,7 @@ public class LandscapeActivity extends Activity {
         controlScheduleExecutor = Executors.newScheduledThreadPool(5);
         controlTimeTask = new Runnable() {
 
-            @Override
-            public void run() {
+            @Override    public void run() {
                 DisplayMetrics dm = getApplicationContext().getResources().getDisplayMetrics();
                 int height = dm.heightPixels;
                 int width = dm.widthPixels;
@@ -1026,6 +1064,9 @@ public class LandscapeActivity extends Activity {
                         }
                         if (!temp[1].equals(scanUploadUrl)) {
                             scanUploadUrl = temp[1];
+                        }
+                        if(temp.length > 2 && !temp[2].equals(queryUrl)){
+                            queryUrl = temp[2];
                         }
                     }
                 } catch (Exception e) {
@@ -1313,6 +1354,14 @@ public class LandscapeActivity extends Activity {
         SharedPreferences.Editor editor = getSharedPreferences("data", MODE_PRIVATE).edit();
         editor.putBoolean("portrait", mProtait);
         editor.apply();
+    }
+
+    private void processFidInfo(String fidInfo,int before){
+        if(before ==0 ){
+            DisplayDialog(fidInfo,1);
+        }else{
+            DisplayDialog(fidInfo,2);
+        }
     }
 
     private void openStopTimer(boolean enable) {
@@ -1741,6 +1790,31 @@ public class LandscapeActivity extends Activity {
     }
 
 
+    private void getQueryInfo(final String fid,final int before) {
+
+        new Thread(new Runnable() {
+       @Override
+            public void run() {
+                String url = queryUrl + "?fid="+fid;
+                String fidInfo = httpGet(url);
+
+                if(before == 0){
+                    Message msg = new Message();
+                    msg.what = 11;
+                    msg.obj = fidInfo;
+                    cameraHandler.sendMessage(msg);
+                }else{
+                    Message msg = new Message();
+                    msg.what = 12;
+                    msg.obj = fidInfo;
+                    cameraHandler.sendMessage(msg);
+                }
+
+            }
+        }).start();
+
+    }
+
     private void uploadInfo() {
                 //发送到服务器
                 if (!gpsUploadUrl.isEmpty()) {
@@ -1950,7 +2024,7 @@ public class LandscapeActivity extends Activity {
                 }
             }
             Log.e(TAG, sb.toString());
-            //mDescribe = sb.toString();
+            //mDescribsb.toString();scan
             //sendRefreshMessage();
         }
     };
@@ -1968,8 +2042,8 @@ public class LandscapeActivity extends Activity {
                     displayScanDialog(mScanContent);
                 }
 
-                if(mScanContent.contains("测试二维码")){
-                    displayInitDialog();
+                if(mScanContent.contains("fid:")){
+                    displayInitDialog(mScanContent.substring(4));
                 }
 
                 new Thread(new Runnable() {
