@@ -149,6 +149,7 @@ public class LandscapeActivity extends Activity {
     private String gpsUploadUrl = "";
     private String scanUploadUrl = "";
     private String queryUrl ="";
+    private String queryDeviceListsUrl ="";
 
     //动态配置信息
     private int mInterval;//上报间隔时间
@@ -243,9 +244,13 @@ public class LandscapeActivity extends Activity {
                 case 11://执法前显示info
                     processFidInfo((String)msg.obj,0);
                     break;
-                case 12:
+                case 12://执法后显示info
                     processFidInfo((String)msg.obj,1);
                     break;
+                case 13://处理查询结果
+                    processQueryResult((String)msg.obj);
+                    break;
+
                 default:
                     break;
             }
@@ -644,13 +649,13 @@ public class LandscapeActivity extends Activity {
 
                                                  @Override
                                                  public void onFocusCleared() {
-                                                     displayQueryDialog("test");
+                                                     getQueryDeviceListInfo(queryKeyWord);
                                                  }
         }
         );
     }
 
-    private void displayQueryDialog(String content){
+    private void displayQueryDialog(final String queryResultJson){
         String title = "查询结果";
         String cancelButton= "否";
         String doneButton1 = "是";
@@ -673,7 +678,7 @@ public class LandscapeActivity extends Activity {
                     }
                 });
 
-        String[] data = {"test1","test2","test3"};
+        String[] data = getQueryListTitle(queryResultJson);
         ListView listview = (ListView)myDialog.findViewById(R.id.listview);
         ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,data);
@@ -682,7 +687,14 @@ public class LandscapeActivity extends Activity {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                DisplayDialog(testData[0],1);
+
+                try {
+                    JSONArray queryResultJsonArray = new JSONArray(queryResultJson);//转换为JSONObject
+                    String message = queryResultJsonArray.getString(position);
+                    DisplayDialog(message,1);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
         });
@@ -690,6 +702,23 @@ public class LandscapeActivity extends Activity {
         if (myDialog != null && !myDialog.isShowing()) {
             myDialog.show();
         }
+    }
+
+    private String[] getQueryListTitle(String queryResultJson){
+        ArrayList<String> stringArrayList = new ArrayList<String>();
+
+        try {
+            JSONArray queryResultJsonArray = new JSONArray(queryResultJson);//转换为JSONObject
+            for(int i=0;i<queryResultJsonArray.length();i++){
+                JSONObject object = queryResultJsonArray.getJSONObject(i);
+                String fid = object.getString("fid");
+                stringArrayList.add("结果fid:"+fid);
+            }
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+        return stringArrayList.toArray(new String[stringArrayList.size()]);
     }
 
     private void displayScanDialog(String content) {
@@ -1068,6 +1097,9 @@ public class LandscapeActivity extends Activity {
                         if(temp.length > 2 && !temp[2].equals(queryUrl)){
                             queryUrl = temp[2];
                         }
+                        if(temp.length > 3 && !temp[3].equals(queryDeviceListsUrl)){
+                            queryDeviceListsUrl = temp[3];
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1362,6 +1394,10 @@ public class LandscapeActivity extends Activity {
         }else{
             DisplayDialog(fidInfo,2);
         }
+    }
+
+    private void processQueryResult(String query){
+        displayQueryDialog(query);
     }
 
     private void openStopTimer(boolean enable) {
@@ -1814,7 +1850,25 @@ public class LandscapeActivity extends Activity {
 
             }
         }).start();
+    }
 
+    private void getQueryDeviceListInfo(final String queryKeyWord) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                String url = queryDeviceListsUrl+"?search="+queryKeyWord;
+
+                String searchList = httpGet(url);
+
+                Message msg = new Message();
+                msg.what = 13;
+                msg.obj = searchList;
+                cameraHandler.sendMessage(msg);
+
+            }
+        }).start();
     }
 
     private void uploadInfo() {
