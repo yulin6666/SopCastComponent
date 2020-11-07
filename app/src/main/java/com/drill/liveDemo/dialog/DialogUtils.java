@@ -7,6 +7,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -15,6 +17,9 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.drill.liveDemo.R;
@@ -44,6 +49,12 @@ public class DialogUtils extends DialogFragment {
         public abstract void onPositiveButton2();
 
         public abstract void onNegativeButton();
+    }
+
+    public static abstract class extraDataListener {
+        public abstract void onTextchanged(String text);
+
+        public abstract void onRadioChecked(boolean checked);
     }
 
     protected void initialiseDialog() {
@@ -127,8 +138,8 @@ public class DialogUtils extends DialogFragment {
     }
 
     public static Dialog createCustomDialog2(Context activity, String title, View customView, String cancelButton,
-                                             String doneButton1, boolean cancelable, final DialogListener listener) {
-        return createDialog2(activity, title, null, customView, cancelButton, doneButton1, cancelable, listener);
+                                             String doneButton1, boolean cancelable, final DialogListener listener,final extraDataListener extraListener) {
+        return createDialog2(activity, title, null, customView, cancelButton, doneButton1, cancelable, listener,extraListener);
     }
 
     public static Dialog createCustomDialog3(Context activity, String title, View customView ,String cancelButton,
@@ -137,10 +148,13 @@ public class DialogUtils extends DialogFragment {
     }
 
     public static Dialog createCustomDialog4(Context activity, String title ,String cancelButton,
-                                             String doneButton1, boolean cancelable, final DialogListener listener) {
-        return createDialog4(activity, title , cancelButton, doneButton1, cancelable, listener);
+                                              boolean cancelable, final DialogListener listener) {
+        return createDialog4(activity, title , cancelButton, cancelable, listener);
     }
-
+    public static Dialog createCustomDialog5(Context activity, String title, View customView, String cancelButton,
+                                              boolean cancelable, final DialogListener listener) {
+        return createDialog5(activity, title, null, customView, cancelButton, cancelable, listener);
+    }
 
     private static Dialog createDialog0(Context activity, String title,String doneButton1, String doneButton2, boolean cancelable,
                                         final DialogListener listener) {
@@ -287,7 +301,7 @@ public class DialogUtils extends DialogFragment {
 
     private static Dialog createDialog2(Context activity, String title, String message, View customView,
                                         String cancelButton, String doneButton1, boolean cancelable,
-                                        final DialogListener listener) {
+                                        final DialogListener listener,final extraDataListener extraListener) {
         if (activity == null)
             return null;
 
@@ -296,6 +310,9 @@ public class DialogUtils extends DialogFragment {
         TextView tvTitle = (TextView) myCustomView.findViewById(R.id.tv_title);
         Button btnNegative = (Button) myCustomView.findViewById(R.id.btn_negative);
         Button btnPositive1 = (Button) myCustomView.findViewById(R.id.btn_positive1);
+        EditText extraText = (EditText) myCustomView.findViewById(R.id.afterEditView);
+        RadioButton radioButton=(RadioButton) myCustomView.findViewById(R.id.afterRadioButton);
+
         ViewGroup dialogContent = (ViewGroup) myCustomView.findViewById(R.id.dialog_content);
 
         final Dialog dialog = DialogUtils.createSimpleDialog(activity, myCustomView, cancelable);
@@ -315,6 +332,36 @@ public class DialogUtils extends DialogFragment {
         if (customView != null ) {
             dialogContent.addView(customView);
         }
+
+        //extraText
+        extraText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(extraListener != null){
+                    extraListener.onTextchanged(s.toString());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        //radio
+        radioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(extraListener != null){
+                    extraListener.onRadioChecked(isChecked);
+                }
+            }
+        });
 
         //Negative button
         if (cancelButton != null && !cancelButton.equals("")) {
@@ -417,7 +464,7 @@ public class DialogUtils extends DialogFragment {
         return dialog;
     }
 
-    private static Dialog createDialog4(Context activity, String title,String cancelButton, String doneButton1, boolean cancelable,final DialogListener listener) {
+    private static Dialog createDialog4(Context activity, String title,String cancelButton, boolean cancelable,final DialogListener listener) {
         if (activity == null)
             return null;
 
@@ -425,7 +472,6 @@ public class DialogUtils extends DialogFragment {
         View myCustomView = inflater.inflate(R.layout.dialog_display4_layout, null);
         TextView tvTitle = (TextView) myCustomView.findViewById(R.id.tv_title);
         Button btnNegative = (Button) myCustomView.findViewById(R.id.btn_negative);
-        Button btnPositive1 = (Button) myCustomView.findViewById(R.id.btn_positive1);
 
         final Dialog dialog = DialogUtils.createSimpleDialog(activity, myCustomView, cancelable);
 
@@ -456,18 +502,52 @@ public class DialogUtils extends DialogFragment {
                 }
             });
         }
-        //Positive button
-        if (doneButton1 != null && !doneButton1.equals("")) {
-            btnPositive1.setText(doneButton1);
-            btnPositive1.setVisibility(View.VISIBLE);
-            btnPositive1.setOnClickListener(new View.OnClickListener() {
+
+        return dialog;
+    }
+
+    private static Dialog createDialog5(Context activity, String title, String message, View customView,
+                                        String cancelButton, boolean cancelable,
+                                        final DialogListener listener) {
+        if (activity == null)
+            return null;
+
+        LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View myCustomView = inflater.inflate(R.layout.dialog_display5_layout, null);
+        TextView tvTitle = (TextView) myCustomView.findViewById(R.id.tv_title);
+        Button btnNegative = (Button) myCustomView.findViewById(R.id.btn_negative);
+        ViewGroup dialogContent = (ViewGroup) myCustomView.findViewById(R.id.dialog_content);
+
+        final Dialog dialog = DialogUtils.createSimpleDialog(activity, myCustomView, cancelable);
+
+        //Define my dialog width
+        int width = DeviceUtils.getDeviceScreenWidth(activity) - 100;
+        ViewGroup.LayoutParams params = myCustomView.getLayoutParams();
+        params.width = width;
+        myCustomView.setLayoutParams(params);
+
+        //Title
+        if (title != null && !title.equals("")) {
+            tvTitle.setText(title);
+        }
+
+        //Custom View
+        if (customView != null ) {
+            dialogContent.addView(customView);
+        }
+
+        //Negative button
+        if (cancelButton != null && !cancelButton.equals("")) {
+            btnNegative.setText(cancelButton);
+            btnNegative.setVisibility(View.VISIBLE);
+            btnNegative.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (dialog != null && dialog.isShowing()) {
                         dialog.dismiss();
                     }
                     if (listener != null) {
-                        listener.onPositiveButton1();
+                        listener.onNegativeButton();
                     }
                 }
             });

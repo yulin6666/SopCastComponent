@@ -24,12 +24,13 @@
     android:text="请输入备注:"/>
 
     <EditText
+        android:id="@+id/afterEditView"
         android:layout_width="match_parent"
         android:layout_height="50sp"
         android:padding="5dp" />
 
     <RadioButton
-        android:id="@+id/radioButton1"
+        android:id="@+id/afterRadioButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="是否禁用"

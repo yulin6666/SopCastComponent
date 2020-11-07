@@ -45,6 +45,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -78,6 +79,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
@@ -150,6 +152,8 @@ public class LandscapeActivity extends Activity {
     private String scanUploadUrl = "";
     private String queryUrl ="";
     private String queryDeviceListsUrl ="";
+    private String setScanUrl ="";
+
 
     //动态配置信息
     private int mInterval;//上报间隔时间
@@ -194,6 +198,8 @@ public class LandscapeActivity extends Activity {
     com.arlib.floatingsearchview.FloatingSearchView mSearchView;
     private String queryKeyWord = "";
     private String fidInfo = "";
+    private String extraInfo = "";
+    private boolean extraForbiden = false;
 
     private Handler cameraHandler = new Handler() {
         @Override
@@ -657,12 +663,11 @@ public class LandscapeActivity extends Activity {
 
     private void displayQueryDialog(final String queryResultJson){
         String title = "查询结果";
-        String cancelButton= "否";
-        String doneButton1 = "是";
+        String cancelButton= "取消";
 
 
         Dialog myDialog = DialogUtils.createCustomDialog4(this, title,
-                cancelButton,doneButton1, false, new DialogUtils.DialogListener() {
+                cancelButton, false, new DialogUtils.DialogListener() {
                     @Override
                     public void onPositiveButton1() {
 
@@ -691,7 +696,7 @@ public class LandscapeActivity extends Activity {
                 try {
                     JSONArray queryResultJsonArray = new JSONArray(queryResultJson);//转换为JSONObject
                     String message = queryResultJsonArray.getString(position);
-                    DisplayDialog(message,1);
+                    DisplayDialog(message,3);
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
@@ -800,20 +805,22 @@ public class LandscapeActivity extends Activity {
         }
     }
 
-    private void DisplayDialog(String jsonString,int type){
+    private void DisplayDialog(final String jsonString, int type){
 
         String title;
         String negativeButton = "取消";
-        String positiveButton1;
-        String positiveButton2;
+        String positiveButton1="";
+        String positiveButton2="";
         if(type ==1){
-            title  ="dialog1";
+            title  ="设备信息(执法前）";
             positiveButton1= "通过";
             positiveButton2 = "未通过";
-        }else {
-            title  ="dialog2";
+        }else if(type ==2){
+            title  ="设备信息（执法后）";
             positiveButton1= "提交";
             positiveButton2 = "";
+        }else{
+            title  ="设备信息";
         }
 
         LayoutInflater inflater = getLayoutInflater();
@@ -887,9 +894,37 @@ public class LandscapeActivity extends Activity {
                     negativeButton, positiveButton1,positiveButton2, false, new DialogUtils.DialogListener() {
                         @Override
                         public void onPositiveButton1() {
-                            //Toast.makeText(LandscapeActivity.this, "通过", Toast.LENGTH_SHORT).show();
-
+                            String Body = appendInfoAfterOriginJson(jsonString,"1","");
+                            setScanInfo(Body);
                         }
+                        @Override
+                        public void onPositiveButton2() {
+                            String Body = appendInfoAfterOriginJson(jsonString,"2","");
+                            setScanInfo(Body);
+                        }
+
+                        @Override
+                        public void onNegativeButton() {
+                            //Toast.makeText(LandscapeActivity.this, "取消", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }else if(type == 2){
+            myDialog = DialogUtils.createCustomDialog2(this, title, customView,
+                    negativeButton, positiveButton1, false, new DialogUtils.DialogListener() {
+                        @Override
+                        public void onPositiveButton1() {
+                            String type;
+                            if(extraForbiden){
+                                type = "3";
+                            }else{
+                                type = "1";
+                            }
+                            String Body = appendInfoAfterOriginJson(jsonString, type,extraInfo);
+                            setScanInfo(Body);
+                            extraInfo = "";
+                            extraForbiden = false;
+                        }
+
                         @Override
                         public void onPositiveButton2() {
                             //Toast.makeText(LandscapeActivity.this, "未通过", Toast.LENGTH_SHORT).show();
@@ -899,10 +934,20 @@ public class LandscapeActivity extends Activity {
                         public void onNegativeButton() {
                             //Toast.makeText(LandscapeActivity.this, "取消", Toast.LENGTH_SHORT).show();
                         }
+                    }, new DialogUtils.extraDataListener() {
+                        @Override
+                        public void onTextchanged(String text) {
+                            extraInfo = text;
+                        }
+
+                        @Override
+                        public void onRadioChecked(boolean checked) {
+                            extraForbiden = checked;
+                        }
                     });
         }else{
-            myDialog = DialogUtils.createCustomDialog2(this, title, customView,
-                    negativeButton, positiveButton1, false, new DialogUtils.DialogListener() {
+            myDialog = DialogUtils.createCustomDialog5(this, title, customView,
+                    negativeButton,false, new DialogUtils.DialogListener() {
                         @Override
                         public void onPositiveButton1() {
                             //Toast.makeText(LandscapeActivity.this, "通过", Toast.LENGTH_SHORT).show();
@@ -925,6 +970,25 @@ public class LandscapeActivity extends Activity {
             myDialog.show();
         }
     }
+
+    private String appendInfoAfterOriginJson(String originJson,String type,String extraInfo){
+        String ret="";
+        try {
+            JSONObject originObject = new JSONObject(originJson);//转换为JSONObject
+            if(!extraInfo.equals("")){
+                originObject.put("extraInfo",extraInfo);
+            }
+            originObject.put("deviceid",mdeviceID);
+            DateFormat dateTimeformat2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String time = dateTimeformat2.format(new Date());
+            originObject.put("time",time);
+            originObject.put("type",type);
+            ret = originObject.toString();
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
+        return ret;
+    };
 
     private void createUploadPool() {
 
@@ -1099,6 +1163,9 @@ public class LandscapeActivity extends Activity {
                         }
                         if(temp.length > 3 && !temp[3].equals(queryDeviceListsUrl)){
                             queryDeviceListsUrl = temp[3];
+                        }
+                        if(temp.length > 4 && !temp[4].equals(setScanUrl)){
+                            setScanUrl = temp[4];
                         }
                     }
                 } catch (Exception e) {
@@ -1869,6 +1936,39 @@ public class LandscapeActivity extends Activity {
 
             }
         }).start();
+    }
+
+    private void setScanInfo(final String Body) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                HttpClient postClient = new DefaultHttpClient();
+                HttpPost httpPost = new HttpPost(setScanUrl);
+                httpPost.addHeader("Content-Type", "application/json");
+
+
+                UrlEncodedFormEntity entity;
+                HttpResponse response;
+                try {
+                    httpPost.setEntity(new StringEntity(Body));
+
+                    response = postClient.execute(httpPost);
+
+                    if (response.getStatusLine().getStatusCode() == 200) {
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                } catch (ClientProtocolException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ;
+            }
+        }
+        ).start();
     }
 
     private void uploadInfo() {

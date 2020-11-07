@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="@drawable/dialog_bg_cover">
 
-
     <TextView
         android:id="@+id/tv_title"
         style="@style/dialog_title"
@@ -13,11 +12,10 @@
         android:layout_height="wrap_content"
         android:text="Adding To Favorite"/>
 
-    <ListView
-        android:id="@+id/listview"
+    <FrameLayout
+        android:id="@+id/dialog_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        ></ListView>
+        android:layout_height="wrap_content"/>
 
     <LinearLayout
         android:layout_below="@id/tv_message"
@@ -35,7 +33,5 @@
             android:textSize="@dimen/font_medium"
             android:text="Cancel"/>
 
-
     </LinearLayout>
-
 </LinearLayout>
