@@ -251,7 +251,12 @@ public class LandscapeActivity extends Activity {
                 case 13://处理查询结果
                     processQueryResult((String)msg.obj);
                     break;
-
+                case 14://查询显示info
+                    processFidInfo((String)msg.obj,2);
+                    break;
+                case 15:
+                    Toast.makeText(LandscapeActivity.this, "获取详细信息失败，服务器无此数据！", Toast.LENGTH_SHORT).show();
+                    break;
                 default:
                     break;
             }
@@ -565,7 +570,7 @@ public class LandscapeActivity extends Activity {
 
         try {
             String id = tm.getImei(0);
-            if (id == null || id == "") {
+            if (id == null || id.equals("")) {
                 mdeviceID = "noMEID";
             } else {
                 mdeviceID = id;
@@ -690,8 +695,9 @@ public class LandscapeActivity extends Activity {
 
                 try {
                     JSONArray queryResultJsonArray = new JSONArray(queryResultJson);//转换为JSONObject
-                    String message = queryResultJsonArray.getString(position);
-                    DisplayDialog(message,3);
+                    JSONObject result = queryResultJsonArray.getJSONObject(position);
+                    String fid =result.getString("fid");
+                    getQueryInfo(fid,"",2);
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
@@ -710,9 +716,20 @@ public class LandscapeActivity extends Activity {
         try {
             JSONArray queryResultJsonArray = new JSONArray(queryResultJson);//转换为JSONObject
             for(int i=0;i<queryResultJsonArray.length();i++){
+                String DisplayInfo="";
                 JSONObject object = queryResultJsonArray.getJSONObject(i);
-                String fid = object.getString("fid");
-                stringArrayList.add("结果fid:"+fid);
+                String name = object.getString("eutName");
+                DisplayInfo += "设备名称:";
+                DisplayInfo += name;
+                DisplayInfo += "\n";
+                String model = object.getString("eutModel");
+                DisplayInfo += "设备型号:";
+                DisplayInfo += model;
+                DisplayInfo += "\n";
+                String companyName = object.getString("companyName");
+                DisplayInfo += "用频单位:";
+                DisplayInfo += companyName;
+                stringArrayList.add(DisplayInfo);
             }
 
         } catch (JSONException e) {
@@ -806,11 +823,11 @@ public class LandscapeActivity extends Activity {
         String negativeButton = "取消";
         String positiveButton1="";
         String positiveButton2="";
-        if(type ==1){
+        if(type ==0){
             title  ="设备信息(执法前）";
             positiveButton1= "通过";
             positiveButton2 = "未通过";
-        }else if(type ==2){
+        }else if(type ==1){
             title  ="设备信息（执法后）";
             positiveButton1= "提交";
             positiveButton2 = "";
@@ -895,7 +912,7 @@ public class LandscapeActivity extends Activity {
 //        }
 
         Dialog myDialog ;
-        if(type == 1){
+        if(type == 0){
             myDialog = DialogUtils.createCustomDialog1(this, title, customView,
                     negativeButton, positiveButton1,positiveButton2, false, new DialogUtils.DialogListener() {
                         @Override
@@ -914,7 +931,7 @@ public class LandscapeActivity extends Activity {
                             //Toast.makeText(LandscapeActivity.this, "取消", Toast.LENGTH_SHORT).show();
                         }
                     });
-        }else if(type == 2){
+        }else if(type == 1){
             myDialog = DialogUtils.createCustomDialog2(this, title, customView,
                     negativeButton, positiveButton1, false, new DialogUtils.DialogListener() {
                         @Override
@@ -1502,10 +1519,12 @@ public class LandscapeActivity extends Activity {
         editor.apply();
     }
 
-    private void processFidInfo(String fidInfo,int before){
-        if(before ==0 ){
+    private void processFidInfo(String fidInfo,int type){
+        if(type ==0 ){
+            DisplayDialog(fidInfo,0);
+        }else if(type ==1){
             DisplayDialog(fidInfo,1);
-        }else{
+        }else if(type ==2){
             DisplayDialog(fidInfo,2);
         }
     }
@@ -1950,24 +1969,42 @@ public class LandscapeActivity extends Activity {
     }
 
 
-    private void getQueryInfo(final String fid,final String id,final int before) {
+    private void getQueryInfo(final String fid,final String id,final int type) {
 
         new Thread(new Runnable() {
        @Override
             public void run() {
 
-                String url = queryUrl+"?fid="+fid+"&id="+id;
+               String url;
+               if(!id.equals("")){
+                   url = queryUrl+"?fid="+fid+"&id="+id;
+               }else{
+                   url = queryUrl+"?fid="+fid;
+               }
 
                 String fidInfo = httpGet(url);
 
-                if(before == 0){
+               if(fidInfo.contains("系统错误")){
+                   Message msg = new Message();
+                   msg.what = 15;
+                   msg.obj = fidInfo;
+                   cameraHandler.sendMessage(msg);
+                   return;
+               }
+
+                if(type == 0){//执法前
                     Message msg = new Message();
                     msg.what = 11;
                     msg.obj = fidInfo;
                     cameraHandler.sendMessage(msg);
-                }else{
+                }else if(type == 1){//执法后
                     Message msg = new Message();
                     msg.what = 12;
+                    msg.obj = fidInfo;
+                    cameraHandler.sendMessage(msg);
+                }else{//查询列表
+                    Message msg = new Message();
+                    msg.what = 14;
                     msg.obj = fidInfo;
                     cameraHandler.sendMessage(msg);
                 }
