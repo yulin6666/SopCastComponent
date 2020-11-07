@@ -566,12 +566,11 @@ public class LandscapeActivity extends Activity {
         try {
             String id = tm.getImei(0);
             if (id == null || id == "") {
-                mdeviceID = "noMEID2";
+                mdeviceID = "noMEID";
             } else {
                 mdeviceID = id;
                 Log.e(TAG, "mdeviceID:" + mdeviceID);
             }
-            mdeviceID = "noMEID";
         } catch (NullPointerException ex) {
             Log.e(TAG, "获取meid空指针异常");
             return;
