@@ -52,18 +52,28 @@
         android:layout_height="match_parent"
         android:background="#4d000000"
         android:gravity="center"
-        android:layout_alignParentRight="true">
+        android:orientation="vertical">
 
         <!--<ImageButton-->
             <!--android:id="@+id/btnRecord"-->
             <!--android:layout_width="60dp"-->
             <!--android:layout_height="60dp"-->
             android:background="@mipmap/ic_record_start" />
-        <ImageButton
-        android:id="@+id/id_scan_button"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:background="@mipmap/scan" />
+        <Button
+            android:id="@+id/id_before_button"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:background="@color/red"
+            android:text="执法前" />
+
+        <Button
+            android:id="@+id/id_after_button"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:layout_below="@+id/id_before_button"
+            android:layout_marginTop="40dp"
+            android:background="@color/red"
+            android:text="执法后" />
     </LinearLayout>
 
     <ProgressBar
@@ -94,7 +104,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:floatingSearch_searchHint="请输入查询内容"
-        app:floatingSearch_searchBarMarginLeft="20dp"
+        app:floatingSearch_searchBarMarginLeft="100dp"
         app:floatingSearch_searchBarMarginTop="20dp"
         app:floatingSearch_searchBarMarginRight="20dp"
         app:floatingSearch_suggestionsListAnimDuration="250"

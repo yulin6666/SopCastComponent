@@ -24,7 +24,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
-import android.renderscript.Sampler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
@@ -39,13 +38,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RadioButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,12 +53,7 @@ import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClientOption;
 import com.drill.liveDemo.dialog.DialogUtils;
-import com.drill.liveDemo.dialog.deviceInfo;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.google.zxing.client.android.CaptureActivity;
-import com.google.zxing.client.android.Contents;
 import com.google.zxing.client.android.Intents;
 import com.laifeng.sopcastsdk.camera.CameraListener;
 import com.laifeng.sopcastsdk.configuration.AudioConfiguration;
@@ -91,7 +84,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DateFormat;
@@ -100,7 +92,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -111,7 +102,8 @@ import static com.laifeng.sopcastsdk.constant.SopCastConstant.TAG;
 
 public class LandscapeActivity extends Activity {
     private CameraLivingView mLFLiveView;
-    private ImageButton mScanButton;
+    private Button mScanBeforeButton;
+    private Button mScanAfterButton;
     private TextView mDebugLiveView;
     //    private MultiToggleImageButton mFlashBtn;
 //    private MultiToggleImageButton mFaceBtn;
@@ -244,8 +236,10 @@ public class LandscapeActivity extends Activity {
                     openStopTimer((boolean) msg.obj);
                     break;
                 case 10://更新UI
-                    mScanButton.setEnabled(true);
-                    mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
+                    mScanBeforeButton.setEnabled(true);
+                    mScanBeforeButton.setBackgroundColor(Color.RED);
+                    mScanAfterButton.setEnabled(true);
+                    mScanAfterButton.setBackgroundColor(Color.RED);
                     break;
                 case 11://执法前显示info
                     processFidInfo((String)msg.obj,0);
@@ -619,7 +613,8 @@ public class LandscapeActivity extends Activity {
 
     private void initViews() {
         mLFLiveView = (CameraLivingView) findViewById(R.id.liveView);
-        mScanButton = (ImageButton) findViewById(R.id.id_scan_button);
+        mScanBeforeButton = (Button) findViewById(R.id.id_before_button);
+        mScanAfterButton = (Button) findViewById(R.id.id_after_button);
         mDebugLiveView = (TextView) findViewById(R.id.debug_live_view);
 //        mFlashBtn = (MultiToggleImageButton) findViewById(R.id.camera_flash_button);
 //        mFaceBtn = (MultiToggleImageButton) findViewById(R.id.camera_switch_button);
@@ -1179,12 +1174,12 @@ public class LandscapeActivity extends Activity {
     }
 
     private void initListeners() {
-        mScanButton.setOnClickListener(new View.OnClickListener() {
+        mScanBeforeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                mScanButton.setEnabled(false);
-                mScanButton.setBackgroundColor(Color.GRAY);
+                mScanBeforeButton.setEnabled(false);
+                mScanBeforeButton.setBackgroundColor(Color.GRAY);
                 //停止直播
                 if (isRecording)
                     stopLive();
@@ -1212,6 +1207,47 @@ public class LandscapeActivity extends Activity {
                         Intent intent = new Intent(LandscapeActivity.this, CaptureActivity.class);
                         intent.setAction(Intents.Scan.ACTION);
                         startActivityForResult(intent, 111);
+                        return true;
+                    }
+
+                    ;
+                }).sendEmptyMessageDelayed(0, 1000);//表示延迟1秒发送任务
+
+            }
+        });
+        mScanAfterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mScanAfterButton.setEnabled(false);
+                mScanAfterButton.setBackgroundColor(Color.GRAY);
+                //停止直播
+                if (isRecording)
+                    stopLive();
+
+                //释放view
+                if (mLFLiveView != null) {
+                    mLFLiveView.release();
+                }
+
+                //关闭上报定时器
+                if (uploaderScheduleManager != null) {
+                    uploaderScheduleManager.cancel(true);
+                    uploaderScheduleManager = null;
+                }
+                //关闭控制定时器
+                if (controlScheduleManager != null) {
+                    controlScheduleManager.cancel(true);
+                    controlScheduleManager = null;
+                }
+
+                new Handler(new Handler.Callback() {
+                    @Override
+                    public boolean handleMessage(Message msg) {
+                        //实现页面跳转
+                        Intent intent = new Intent(LandscapeActivity.this, CaptureActivity.class);
+                        intent.setAction(Intents.Scan.ACTION);
+                        startActivityForResult(intent, 112);
                         return true;
                     }
 
@@ -1608,8 +1644,10 @@ public class LandscapeActivity extends Activity {
             @Override
             public void onOpenSuccess() {
                 Toast.makeText(LandscapeActivity.this, "相机打开成功", Toast.LENGTH_LONG).show();
-                mScanButton.setEnabled(false);
-                mScanButton.setBackgroundColor(Color.GRAY);
+                mScanBeforeButton.setEnabled(false);
+                mScanBeforeButton.setBackgroundColor(Color.GRAY);
+                mScanAfterButton.setEnabled(false);
+                mScanAfterButton.setBackgroundColor(Color.GRAY);
             }
 
             @Override
@@ -1650,8 +1688,10 @@ public class LandscapeActivity extends Activity {
                 mLFLiveView.stop();
                 isRecording = false;
                 refreshLiveInfo();
-                mScanButton.setEnabled(true);
-                mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
+                mScanBeforeButton.setEnabled(true);
+                mScanBeforeButton.setBackgroundColor(Color.RED);
+                mScanAfterButton.setEnabled(true);
+                mScanAfterButton.setBackgroundColor(Color.RED);
             }
 
             @Override
@@ -1660,8 +1700,10 @@ public class LandscapeActivity extends Activity {
                 Toast.makeText(LandscapeActivity.this, "开始直播,id号:" + mid + ",地址:" + mPublishUrl, Toast.LENGTH_SHORT).show();
                 isRecording = true;
                 refreshLiveInfo();
-                mScanButton.setEnabled(true);
-                mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
+                mScanBeforeButton.setEnabled(true);
+                mScanBeforeButton.setBackgroundColor(Color.RED);
+                mScanAfterButton.setEnabled(true);
+                mScanAfterButton.setBackgroundColor(Color.RED);
             }
         });
     }
@@ -1749,8 +1791,10 @@ public class LandscapeActivity extends Activity {
 //            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
             mLFLiveView.stop();
             isRecording = false;
-            mScanButton.setEnabled(true);
-            mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
+            mScanBeforeButton.setEnabled(true);
+            mScanBeforeButton.setBackgroundColor(Color.RED);
+            mScanAfterButton.setEnabled(true);
+            mScanAfterButton.setBackgroundColor(Color.RED);
             refreshLiveInfo();
         }
 
@@ -1760,8 +1804,10 @@ public class LandscapeActivity extends Activity {
             Toast.makeText(LandscapeActivity.this, "发布失败", Toast.LENGTH_SHORT).show();
 //            mRecordBtn.setBackgroundResource(R.mipmap.ic_record_start);
             isRecording = false;
-            mScanButton.setEnabled(true);
-            mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
+            mScanBeforeButton.setEnabled(true);
+            mScanBeforeButton.setBackgroundColor(Color.RED);
+            mScanAfterButton.setEnabled(true);
+            mScanAfterButton.setBackgroundColor(Color.RED);
             refreshLiveInfo();
         }
 
@@ -2188,7 +2234,8 @@ public class LandscapeActivity extends Activity {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 111) {
+
+        {
             if (data != null) {
 
                 mScanContent = data.getStringExtra(Intents.Scan.RESULT);
@@ -2200,25 +2247,30 @@ public class LandscapeActivity extends Activity {
 
                 if(mScanContent.contains("fid")){
 
-                try{
-                    String fid ="";
-                    String id ="";
+                    try{
+                        String fid ="";
+                        String id ="";
 
-                    JSONObject scanContent = new JSONObject(mScanContent);//转换为JSONObject
-                    Iterator<?> it = scanContent.keys();
-                    String key = "";
-                    while(it.hasNext()) {//遍历JSONObject
-                        key = (String) it.next().toString();
-                        if(key.equals("fid")){
-                            fid = scanContent.getString("fid");
-                        }else if(key.equals("id")){
-                            id = scanContent.getString("id");
+                        JSONObject scanContent = new JSONObject(mScanContent);//转换为JSONObject
+                        Iterator<?> it = scanContent.keys();
+                        String key = "";
+                        while(it.hasNext()) {//遍历JSONObject
+                            key = (String) it.next().toString();
+                            if(key.equals("fid")){
+                                fid = scanContent.getString("fid");
+                            }else if(key.equals("id")){
+                                id = scanContent.getString("id");
+                            }
                         }
+                        Toast.makeText(LandscapeActivity.this, "正在请求服务器，请等待", Toast.LENGTH_SHORT).show();
+                        if(requestCode == 111){
+                            getQueryInfo(fid,id,0);
+                        }else if(requestCode == 112){
+                            getQueryInfo(fid,id,1);
+                        }
+                    }catch (JSONException e){
+                        e.printStackTrace();
                     }
-                    displayInitDialog(fid,id);
-                }catch (JSONException e){
-                    e.printStackTrace();
-                }
 
                 }
 
@@ -2238,7 +2290,7 @@ public class LandscapeActivity extends Activity {
                         try {
                             entity = new UrlEncodedFormEntity(params, "utf-8");
                             httpPost.setEntity(entity);
-                           response = postClient.execute(httpPost);
+                            response = postClient.execute(httpPost);
 
                             if (response.getStatusLine().getStatusCode() == 200) {
                                 runOnUiThread(new Runnable() {
