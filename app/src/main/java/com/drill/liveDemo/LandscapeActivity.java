@@ -1004,7 +1004,7 @@ public class LandscapeActivity extends Activity {
             originObject.put("deviceid",mdeviceID);
             DateFormat dateTimeformat2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String time = dateTimeformat2.format(new Date());
-            originObject.put("time",time);
+            originObject.put("scanTime",time);
             originObject.put("type",type);
             ret = originObject.toString();
         }catch(JSONException e){
