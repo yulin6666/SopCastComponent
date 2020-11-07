@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -818,6 +819,9 @@ public class LandscapeActivity extends Activity {
             title  ="设备信息";
         }
 
+        Configuration mConfiguration = this.getResources().getConfiguration(); //获取设置的配置信息
+        int ori = mConfiguration.orientation; //获取屏幕方向
+
         LayoutInflater inflater = getLayoutInflater();
         View customView = inflater.inflate(R.layout.dialog_item_layout,null);
         String message= "";
@@ -832,7 +836,11 @@ public class LandscapeActivity extends Activity {
                     message += key;
                     message += ":";
                     message += (String)valueObj;
-                    message += "\n";
+                    if (ori == mConfiguration.ORIENTATION_PORTRAIT) {
+                        message += "\n";
+                    }else{
+                        message += "    ";
+                    }
                 }else if(valueObj instanceof JSONArray){
                     //图片数据
                     if(key.equals("simg")){
@@ -858,7 +866,11 @@ public class LandscapeActivity extends Activity {
                     message += ":";
                     String value = String.valueOf(valueObj);
                     message += value;
-                    message += "\n";
+                    if (ori == mConfiguration.ORIENTATION_PORTRAIT) {
+                        message += "\n";
+                    }else{
+                        message += "    ";
+                    }
                 }
             }
         } catch (JSONException e) {

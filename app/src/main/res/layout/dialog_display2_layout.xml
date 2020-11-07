@@ -17,24 +17,34 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <TextView
-    android:id="@+id/tv_beizhu"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="请输入备注:"/>
-
-    <EditText
-        android:id="@+id/afterEditView"
+    <LinearLayout
+        android:layout_below="@id/tv_message"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="50sp"
-        android:padding="5dp" />
+        android:layout_height="wrap_content">
+            <TextView
+            android:id="@+id/tv_beizhu"
+            android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+            android:text="备注:"/>
 
-    <RadioButton
-        android:id="@+id/afterRadioButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="是否禁用"
+            <EditText
+                android:id="@+id/afterEditView"
+                android:layout_weight="5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:padding="5dp" />
+
+            <RadioButton
+                android:id="@+id/afterRadioButton"
+                android:layout_weight="3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="是否禁用"
         />
+    </LinearLayout>
+
     <LinearLayout
         android:layout_below="@id/tv_message"
         android:orientation="horizontal"
