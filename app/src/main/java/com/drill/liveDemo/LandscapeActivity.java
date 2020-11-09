@@ -718,18 +718,25 @@ public class LandscapeActivity extends Activity {
             for(int i=0;i<queryResultJsonArray.length();i++){
                 String DisplayInfo="";
                 JSONObject object = queryResultJsonArray.getJSONObject(i);
-                String name = object.getString("eutName");
-                DisplayInfo += "设备名称:";
-                DisplayInfo += name;
-                DisplayInfo += "\n";
-                String model = object.getString("eutModel");
-                DisplayInfo += "设备型号:";
-                DisplayInfo += model;
-                DisplayInfo += "\n";
-                String companyName = object.getString("companyName");
-                DisplayInfo += "用频单位:";
-                DisplayInfo += companyName;
-                stringArrayList.add(DisplayInfo);
+                if(object.has("eutName")) {
+                    String name = object.getString("eutName");
+                    DisplayInfo += "设备名称:";
+                    DisplayInfo += name;
+                    DisplayInfo += "\n";
+                }
+                if(object.has("eutModel")){
+                    String model = object.getString("eutModel");
+                    DisplayInfo += "设备型号:";
+                    DisplayInfo += model;
+                    DisplayInfo += "\n";
+                }
+                if(object.has("companyName")){
+                    String companyName = object.getString("companyName");
+                    DisplayInfo += "用频单位:";
+                    DisplayInfo += companyName;
+                }
+                if(!DisplayInfo.equals(""))
+                    stringArrayList.add(DisplayInfo);
             }
 
         } catch (JSONException e) {
@@ -849,14 +856,13 @@ public class LandscapeActivity extends Activity {
                 key = (String) it.next().toString();
                 Object valueObj = result.get(key);
                 if(valueObj instanceof String){
+                    if(key.equals("fid")){
+                        continue;
+                    }
                     message += key;
                     message += ":";
                     message += (String)valueObj;
-                    if (ori == mConfiguration.ORIENTATION_PORTRAIT) {
                         message += "\n";
-                    }else{
-                        message += "    ";
-                    }
                 }else if(valueObj instanceof JSONArray){
                     //图片数据
                     if(key.equals("simg")){
@@ -882,11 +888,7 @@ public class LandscapeActivity extends Activity {
                     message += ":";
                     String value = String.valueOf(valueObj);
                     message += value;
-                    if (ori == mConfiguration.ORIENTATION_PORTRAIT) {
-                        message += "\n";
-                    }else{
-                        message += "    ";
-                    }
+                    message += "\n";
                 }
             }
         } catch (JSONException e) {
