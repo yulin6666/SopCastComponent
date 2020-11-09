@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -223,7 +224,12 @@ public class DialogUtils extends DialogFragment {
             return null;
 
         LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View myCustomView = inflater.inflate(R.layout.dialog_display1_layout, null);
+        View myCustomView;
+        if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            myCustomView = inflater.inflate(R.layout.dialog_display1_layout, null);
+        }else{
+            myCustomView = inflater.inflate(R.layout.dialog_display1_layout_land, null);
+        }
         TextView tvTitle = (TextView) myCustomView.findViewById(R.id.tv_title);
         Button btnNegative = (Button) myCustomView.findViewById(R.id.btn_negative);
         Button btnPositive1 = (Button) myCustomView.findViewById(R.id.btn_positive1);
@@ -306,8 +312,12 @@ public class DialogUtils extends DialogFragment {
             return null;
 
         LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View myCustomView = inflater.inflate(R.layout.dialog_display2_layout, null);
-        TextView tvTitle = (TextView) myCustomView.findViewById(R.id.tv_title);
+        View myCustomView;
+        if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            myCustomView = inflater.inflate(R.layout.dialog_display2_layout, null);
+        }else{
+            myCustomView = inflater.inflate(R.layout.dialog_display2_layout_land, null);
+        }        TextView tvTitle = (TextView) myCustomView.findViewById(R.id.tv_title);
         Button btnNegative = (Button) myCustomView.findViewById(R.id.btn_negative);
         Button btnPositive1 = (Button) myCustomView.findViewById(R.id.btn_positive1);
         EditText extraText = (EditText) myCustomView.findViewById(R.id.afterEditView);
@@ -406,6 +416,7 @@ public class DialogUtils extends DialogFragment {
 
         LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View myCustomView = inflater.inflate(R.layout.dialog_display3_layout, null);
+
         TextView tvTitle = (TextView) myCustomView.findViewById(R.id.tv_title);
         Button btnNegative = (Button) myCustomView.findViewById(R.id.btn_negative);
         Button btnPositive1 = (Button) myCustomView.findViewById(R.id.btn_positive1);
@@ -513,7 +524,12 @@ public class DialogUtils extends DialogFragment {
             return null;
 
         LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View myCustomView = inflater.inflate(R.layout.dialog_display5_layout, null);
+        View myCustomView;
+        if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            myCustomView = inflater.inflate(R.layout.dialog_display5_layout, null);
+        }else{
+            myCustomView = inflater.inflate(R.layout.dialog_display5_layout_land, null);
+        }
         TextView tvTitle = (TextView) myCustomView.findViewById(R.id.tv_title);
         Button btnNegative = (Button) myCustomView.findViewById(R.id.btn_negative);
         ViewGroup dialogContent = (ViewGroup) myCustomView.findViewById(R.id.dialog_content);

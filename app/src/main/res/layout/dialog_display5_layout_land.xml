@@ -15,7 +15,7 @@
     <FrameLayout
         android:id="@+id/dialog_content"
         android:layout_width="match_parent"
-        android:layout_height="400dp"/>
+        android:layout_height="200dp"/>
 
     <LinearLayout
         android:layout_below="@id/tv_message"
@@ -32,16 +32,6 @@
             android:visibility="visible"
             android:textSize="@dimen/font_medium"
             android:text="Cancel"/>
-
-        <Button
-            android:id="@+id/btn_positive1"
-            style="@style/dialog_button_positive"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/font_medium"
-            android:visibility="visible"
-            android:text="Yes"/>
 
     </LinearLayout>
 </LinearLayout>

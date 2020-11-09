@@ -862,7 +862,7 @@ public class LandscapeActivity extends Activity {
                     message += key;
                     message += ":";
                     message += (String)valueObj;
-                        message += "\n";
+                    message += "\n";
                 }else if(valueObj instanceof JSONArray){
                     //图片数据
                     if(key.equals("simg")){
