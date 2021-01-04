@@ -30,6 +30,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -106,6 +107,8 @@ public class LandscapeActivity extends Activity {
     private VideoConfiguration mVideoConfiguration;
     private int mCurrentBps;
     private Dialog mUploadDialog;
+    private Dialog mCtrlDialog;
+
     private EditText mAddressET;
     private EditText msolution;
     private String mid;
@@ -119,6 +122,7 @@ public class LandscapeActivity extends Activity {
     //final String defaultIP = "drli.urthe1.xyz";
     final String defaultIP = "39.106.226.236";
     private String mip = defaultIP;
+    private String mCtrlip = defaultIP;
     private String mdeviceID;
     private String mStatus;
     private String mNetWorkInfo;
@@ -212,6 +216,9 @@ public class LandscapeActivity extends Activity {
                 case 10://更新UI
                     mScanButton.setEnabled(true);
                     mScanButton.setBackground(getResources().getDrawable(R.mipmap.scan));
+                    break;
+                case 16://第一次启动打开控制系统
+                    startControlThread();
                     break;
                 default:
                     break;
@@ -351,6 +358,11 @@ public class LandscapeActivity extends Activity {
         initViews();
         initListeners();
         initLiveView();
+
+        String ctrlip = pref.getString("ctrlip", "");
+        if(ctrlip.equals("")) {
+            initControlAddressDialog();
+        }
 //        initRtmpAddressDialog();
 //        loadLiveViewConfig();
 
@@ -363,15 +375,7 @@ public class LandscapeActivity extends Activity {
 //            mUploadDialog.show();
 //        }
 
-        //根据远端状态来判断
-        createSchedulePool();
-
-        //资源上报池
-        createUploadPool();
-        Intent startIntent = new Intent(this, BackgroundService.class);
-        startService(startIntent);
-
-
+        startControlThread();
     }
 
     private void startTiggerTimer() {
@@ -605,10 +609,10 @@ public class LandscapeActivity extends Activity {
                 int width = dm.widthPixels;
                 String jsonStr;
                 if (height == 240 && width == 320) {
-                    String url = "http://" + mip + "/api/getClientStatus?deviceType=1";
+                    String url = "http://" + mCtrlip + "/api/getClientStatus?deviceType=1";
                     jsonStr = httpGet(url);
                 } else {
-                    String url = "http://" + mip + "/api/getClientStatus";
+                    String url = "http://" + mCtrlip + "/api/getClientStatus";
                     jsonStr = httpGet(url);
                 }
                 //解析json文件
@@ -714,7 +718,7 @@ public class LandscapeActivity extends Activity {
                     e.printStackTrace();
                 }
                 //全局控制接口
-                String url = "http://" + mip + "/api/settings";
+                String url = "http://" + mCtrlip + "/api/settings";
                 jsonStr = httpGet(url);
                 try {
                     JSONObject jsonObject = new JSONObject(jsonStr);
@@ -851,6 +855,72 @@ public class LandscapeActivity extends Activity {
 //                LandscapeActivity.this.finish();
 //            }
 //        });
+    }
+
+    private void initControlAddressDialog() {
+        LayoutInflater inflater = getLayoutInflater();
+        View playView = inflater.inflate(R.layout.control_address_dialog,(ViewGroup) findViewById(R.id.dialog));
+        final EditText ipEditText = (EditText) playView.findViewById(R.id.ip);
+        Button okBtn = (Button) playView.findViewById(R.id.ok);
+        Button cancelBtn = (Button) playView.findViewById(R.id.cancel);
+        AlertDialog.Builder uploadBuilder = new AlertDialog.Builder(this);
+        uploadBuilder.setTitle("请设置控制台ip信息:");
+        uploadBuilder.setView(playView);
+        mCtrlDialog = uploadBuilder.create();
+
+        okBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mCtrlip = ipEditText.getText().toString();
+                if(TextUtils.isEmpty(mCtrlip)) {
+                    mCtrlip = defaultIP;
+                }
+                //持久化
+                SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
+                editor.putString("ctrlip",mCtrlip);
+                editor.apply();
+
+                //发送设置指令
+                Message msg = new Message();
+                msg.what = 16;
+                cameraHandler.sendMessage(msg);
+
+
+                LandscapeActivity.this.runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Log.i("Dialog","dialog dismiss");
+                        mCtrlDialog.dismiss();
+                    }
+                });
+            }
+        });
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LandscapeActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        SharedPreferences.Editor editor = getSharedPreferences("data",MODE_PRIVATE).edit();
+                        editor.putString("ctrlip",mCtrlip);
+                        editor.apply();
+
+                        //发送设置指令
+                        Message msg = new Message();
+                        msg.what = 16;
+                        cameraHandler.sendMessage(msg);
+
+                        Log.i("Dialog","dialog dismiss");
+                        mCtrlDialog.dismiss();
+                    }
+                });
+            }
+        });
+
+        mCtrlDialog.show();
     }
 
 //    private void initRtmpAddressDialog() {
@@ -1027,6 +1097,36 @@ public class LandscapeActivity extends Activity {
         editor.apply();
     }
 
+<<<<<<< HEAD
+=======
+    private void processFidInfo(String fidInfo,int type){
+        if(type ==0 ){
+            DisplayDialog(fidInfo,0);
+        }else if(type ==1){
+            DisplayDialog(fidInfo,1);
+        }else if(type ==2){
+            DisplayDialog(fidInfo,2);
+        }
+    }
+
+    private void startControlThread(){
+        SharedPreferences pref = getSharedPreferences("data", MODE_PRIVATE);
+        String ctrlip = pref.getString("ctrlip", "");
+        if(!ctrlip.equals("")){
+            //根据远端状态来判断
+            createSchedulePool();
+            //资源上报池
+            createUploadPool();
+            Intent startIntent = new Intent(this, BackgroundService.class);
+            startService(startIntent);
+        }
+    }
+
+    private void processQueryResult(String query){
+        displayQueryDialog(query);
+    }
+
+>>>>>>> 24b6bbd... 启动增加控制台IP设置
     private void openStopTimer(boolean enable) {
         triggerEnable = enable;
         if (triggerEnable) {
@@ -1459,7 +1559,7 @@ public class LandscapeActivity extends Activity {
                 if (!gpsUploadUrl.isEmpty()) {
                     sendDirectToServer();
                 }
-                String uriAPI = "http://" + mip + "/api/updateDevicesStatus";
+                String uriAPI = "http://" + mCtrlip + "/api/updateDevicesStatus";
 
                 HttpClient postClient = new DefaultHttpClient();
                 HttpPost httpPost = new HttpPost(uriAPI);
@@ -1679,7 +1779,7 @@ public class LandscapeActivity extends Activity {
 
                 new Thread(new Runnable() {
                     public void run() {
-                        String uriAPI = "http://" + mip + "/api/newScanningMessage?deviceID=" + mdeviceID;
+                        String uriAPI = "http://" + mCtrlip + "/api/newScanningMessage?deviceID=" + mdeviceID;
                         HttpClient postClient = new DefaultHttpClient();
                         HttpPost httpPost = new HttpPost(uriAPI);
                         List<NameValuePair> params = new ArrayList<NameValuePair>();
