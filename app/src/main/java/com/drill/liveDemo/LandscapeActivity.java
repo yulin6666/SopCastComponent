@@ -3,6 +3,7 @@ package com.drill.liveDemo;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Notification;
 import android.content.Context;
@@ -28,10 +29,12 @@ import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -1097,17 +1100,6 @@ public class LandscapeActivity extends Activity {
         editor.apply();
     }
 
-<<<<<<< HEAD
-=======
-    private void processFidInfo(String fidInfo,int type){
-        if(type ==0 ){
-            DisplayDialog(fidInfo,0);
-        }else if(type ==1){
-            DisplayDialog(fidInfo,1);
-        }else if(type ==2){
-            DisplayDialog(fidInfo,2);
-        }
-    }
 
     private void startControlThread(){
         SharedPreferences pref = getSharedPreferences("data", MODE_PRIVATE);
@@ -1122,11 +1114,6 @@ public class LandscapeActivity extends Activity {
         }
     }
 
-    private void processQueryResult(String query){
-        displayQueryDialog(query);
-    }
-
->>>>>>> 24b6bbd... 启动增加控制台IP设置
     private void openStopTimer(boolean enable) {
         triggerEnable = enable;
         if (triggerEnable) {
