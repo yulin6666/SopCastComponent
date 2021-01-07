@@ -362,8 +362,8 @@ public class LandscapeActivity extends Activity {
         initListeners();
         initLiveView();
 
-        String ctrlip = pref.getString("ctrlip", "");
-        if(ctrlip.equals("")) {
+        mCtrlip = pref.getString("ctrlip", "");
+        if(mCtrlip.equals("")) {
             initControlAddressDialog();
         }
 //        initRtmpAddressDialog();
@@ -518,7 +518,7 @@ public class LandscapeActivity extends Activity {
 
         try {
             String id = tm.getImei(0);
-            if (id == null || id == "") {
+            if (id == null || id.equals("")) {
                 mdeviceID = "noMEID2";
             } else {
                 mdeviceID = id;
@@ -1102,9 +1102,7 @@ public class LandscapeActivity extends Activity {
 
 
     private void startControlThread(){
-        SharedPreferences pref = getSharedPreferences("data", MODE_PRIVATE);
-        String ctrlip = pref.getString("ctrlip", "");
-        if(!ctrlip.equals("")){
+        if(!mCtrlip.equals("")){
             //根据远端状态来判断
             createSchedulePool();
             //资源上报池
