@@ -517,7 +517,7 @@ public class LandscapeActivity extends Activity {
 //        }
 
         try {
-            String id = tm.getImei(0);
+            String id = tm.getDeviceId().toString();
             if (id == null || id.equals("")) {
                 mdeviceID = "noMEID2";
             } else {
