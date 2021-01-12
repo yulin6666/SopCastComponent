@@ -312,7 +312,7 @@ public class LandscapeActivity extends Activity {
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 1: {
-                if (grantResults.length > 0 && grantResults[5] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
                     Log.i("LandscapeActivity", "dialog权限回调");
                     init();
