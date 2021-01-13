@@ -246,10 +246,10 @@ public class LandscapeActivity extends Activity {
                     mScanAfterButton.setEnabled(true);
                     mScanAfterButton.setBackgroundColor(Color.RED);
                     break;
-                case 11://执法前显示info
+                case 11:
                     processFidInfo((String)msg.obj,0);
                     break;
-                case 12://执法后显示info
+                case 12:
                     processFidInfo((String)msg.obj,1);
                     break;
                 case 13://处理查询结果
@@ -802,8 +802,8 @@ public class LandscapeActivity extends Activity {
 
     private void displayInitDialog(final String fidInfo,final String id){
         String title = "执法选择框";
-        String positiveButton1= "执法前";
-        String positiveButton2 = "执法后";
+        String positiveButton1= "设备入场";
+        String positiveButton2 = "现场抽查";
 
         Dialog myDialog = DialogUtils.createCustomDialog0(this, title,
                      positiveButton1,positiveButton2, false, new DialogUtils.DialogListener() {
@@ -838,11 +838,11 @@ public class LandscapeActivity extends Activity {
         String positiveButton1="";
         String positiveButton2="";
         if(type ==0){
-            title  ="设备信息(执法前）";
+            title  ="设备信息(设备入场）";
             positiveButton1= "通过";
             positiveButton2 = "未通过";
         }else if(type ==1){
-            title  ="设备信息（执法后）";
+            title  ="设备信息（现场抽查）";
             positiveButton1= "提交";
             positiveButton2 = "";
         }else{
@@ -859,7 +859,7 @@ public class LandscapeActivity extends Activity {
             JSONObject result = new JSONObject(jsonString);//转换为JSONObject
             Iterator<?> it = result.keys();
             String key = "";
-            while(it.hasNext()){//遍历JSONObject
+            while(it.hasNext()){//遍历JSONObject˝
                 key = (String) it.next().toString();
                 Object valueObj = result.get(key);
                 if(valueObj instanceof String){
@@ -2087,12 +2087,12 @@ public class LandscapeActivity extends Activity {
                    return;
                }
 
-                if(type == 0){//执法前
+                if(type == 0){
                     Message msg = new Message();
                     msg.what = 11;
                     msg.obj = fidInfo;
                     cameraHandler.sendMessage(msg);
-                }else if(type == 1){//执法后
+                }else if(type == 1){
                     Message msg = new Message();
                     msg.what = 12;
                     msg.obj = fidInfo;

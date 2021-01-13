@@ -68,7 +68,7 @@
             android:layout_width="80dp"
             android:layout_height="40dp"
             android:background="@color/red"
-            android:text="执法前" />
+            android:text="设备入场" />
 
         <Button
             android:id="@+id/id_after_button"
@@ -76,7 +76,7 @@
             android:layout_height="40dp"
             android:background="@color/red"
             android:layout_marginLeft="40dp"
-            android:text="执法后" />
+            android:text="现场抽查" />
     </LinearLayout>
 
     <ProgressBar
