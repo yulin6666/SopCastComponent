@@ -79,7 +79,7 @@ public final class OpenCameraInterface {
     return new OpenCamera(cameraId,
                           camera,
                           CameraFacing.values()[cameraInfo.facing],
-                          cameraInfo.orientation);
+                          0);
   }
 
 }
