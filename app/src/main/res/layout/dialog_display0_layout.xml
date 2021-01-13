@@ -20,7 +20,7 @@
         android:textSize="@dimen/font_medium"
         android:textColor="@color/text_color_dark"
         android:background="@color/dialog_bg_color"
-        android:text="请选择执法前还是执法后"/>
+        android:text="请选择设备入场还是现场抽查"/>
 
     <FrameLayout
         android:id="@+id/dialog_content"
@@ -31,7 +31,7 @@
         android:layout_below="@id/tv_message"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">s
+        android:layout_height="wrap_content">
 
         <Button
             android:id="@+id/btn_positive1"
