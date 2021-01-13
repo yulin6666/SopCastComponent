@@ -15,7 +15,7 @@
     <FrameLayout
         android:id="@+id/dialog_content"
         android:layout_width="match_parent"
-        android:layout_height="400dp"/>
+        android:layout_height="200dp"/>
 
     <LinearLayout
         android:layout_below="@id/tv_message"
