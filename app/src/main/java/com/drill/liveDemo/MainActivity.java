@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
             if(position == 0) {
                 string1 = "二维码扫描";
             } else if(position == 1) {
-                string1 = "演练直播";
+                string1 = "活动执法";
             }
 //            else if(position == 2) {
 //                string1 = "GPS定位";

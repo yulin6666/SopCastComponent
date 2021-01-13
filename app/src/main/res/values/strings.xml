@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">演练直播</string>
+    <string name="app_name">活动执法</string>
     <string name="title_activity_gps">gps信息</string>
     <string name="app_picker_name">Applications</string>
     <string name="bookmark_picker_name">Bookmarks</string>
