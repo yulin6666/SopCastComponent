@@ -1595,6 +1595,13 @@ public class LandscapeActivity extends Activity {
     }
 
     private void processFidInfo(String fidInfo,int type){
+
+        if(fidInfo.equals("")){
+            Toast.makeText(LandscapeActivity.this, "数据获取失败，请检查接口！", Toast.LENGTH_SHORT).show();
+
+            return;
+        }
+
         if(type ==0 ){
             DisplayDialog(fidInfo,0);
         }else if(type ==1){
@@ -2070,7 +2077,7 @@ public class LandscapeActivity extends Activity {
                    url = queryUrl+"?fid="+fid;
                }
 
-                String fidInfo = httpGet(url);
+           String fidInfo = httpGet(url);
 
                if(fidInfo.contains("系统错误")){
                    Message msg = new Message();
