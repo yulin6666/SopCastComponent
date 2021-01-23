@@ -2078,7 +2078,6 @@ public class LandscapeActivity extends Activity {
                }
 
            String fidInfo = httpGet(url);
-
                if(fidInfo.contains("系统错误")){
                    Message msg = new Message();
                    msg.what = 15;
