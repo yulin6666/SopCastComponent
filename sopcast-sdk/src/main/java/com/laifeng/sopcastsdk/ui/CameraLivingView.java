@@ -2,17 +2,29 @@ package com.laifeng.sopcastsdk.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.RectF;
+import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.PowerManager;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.Display;
+import android.view.Surface;
+import android.view.WindowManager;
 
 import com.laifeng.sopcastsdk.audio.AudioUtils;
 import com.laifeng.sopcastsdk.camera.CameraData;
 import com.laifeng.sopcastsdk.camera.CameraHolder;
 import com.laifeng.sopcastsdk.camera.CameraListener;
+import com.laifeng.sopcastsdk.camera.ImageUtils;
 import com.laifeng.sopcastsdk.configuration.AudioConfiguration;
 import com.laifeng.sopcastsdk.configuration.CameraConfiguration;
 import com.laifeng.sopcastsdk.configuration.VideoConfiguration;
@@ -30,6 +42,13 @@ import com.laifeng.sopcastsdk.utils.SopCastLog;
 import com.laifeng.sopcastsdk.utils.SopCastUtils;
 import com.laifeng.sopcastsdk.utils.WeakHandler;
 import com.laifeng.sopcastsdk.video.effect.Effect;
+
+import org.tensorflow.lite.examples.detection.tflite.Detector;
+import org.tensorflow.lite.examples.detection.tflite.TFLiteObjectDetectionAPIModel;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Title: CameraLivingView
@@ -61,6 +80,20 @@ public class CameraLivingView extends CameraView {
     private LivingStartListener mLivingStartListener;
     private WeakHandler mHandler = new WeakHandler();
 
+    private static final int TF_OD_API_INPUT_SIZE = 300;
+    private static final boolean TF_OD_API_IS_QUANTIZED = true;
+    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.5f;
+    private static final String TF_OD_API_MODEL_FILE = "detect.tflite";
+    private static final String TF_OD_API_LABELS_FILE = "labelmap.txt";
+    private int[] rgbBytes = null;
+    private Detector detector;
+    private Bitmap rgbFrameBitmap = null;
+    private Bitmap croppedBitmap = null;
+    private Matrix frameToCropTransform;
+    private Matrix cropToFrameTransform;
+    private Handler handler;
+    private HandlerThread handlerThread;
+
     public interface LivingStartListener {
         void startError(int error);
 
@@ -90,6 +123,93 @@ public class CameraLivingView extends CameraView {
         NormalAudioController audioController = new NormalAudioController();
         mStreamController = new StreamController(videoController, audioController);
         mRenderer.setCameraOpenListener(mCameraOpenListener);
+
+        initObjectDetect();
+    }
+
+    public void initObjectDetect(){
+        int cropSize = TF_OD_API_INPUT_SIZE;
+        try {
+            detector =
+                    TFLiteObjectDetectionAPIModel.create(
+                            getContext(),
+                            TF_OD_API_MODEL_FILE,
+                            TF_OD_API_LABELS_FILE,
+                            TF_OD_API_INPUT_SIZE,
+                            TF_OD_API_IS_QUANTIZED);
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void doObjectDetect(byte[] data,Camera camera){
+        //1：转化为RBG bitmap数据
+        Camera.Size size = camera.getParameters().getPreviewSize();
+        if(rgbBytes == null) {//初始化rgb缓冲区
+            rgbBytes = new int[size.width*size.height];
+            rgbFrameBitmap = Bitmap.createBitmap(size.width, size.height, Bitmap.Config.ARGB_8888);
+            croppedBitmap = Bitmap.createBitmap(TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE, Bitmap.Config.ARGB_8888);
+            //对图片进行旋转
+            Integer sensorOrientation;
+            sensorOrientation = 90 - getScreenOrientation();
+            frameToCropTransform =
+                    ImageUtils.getTransformationMatrix(
+                            size.width, size.height,
+                            TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE,
+                            sensorOrientation, false);
+            cropToFrameTransform = new Matrix();
+            frameToCropTransform.invert(cropToFrameTransform);
+
+
+        }
+        ImageUtils.convertYUV420SPToARGB8888(data, size.width, size.height, rgbBytes);
+        rgbFrameBitmap.setPixels(rgbBytes, 0, size.width, 0, 0, size.width, size.height);
+
+        //2：裁剪
+        final Canvas canvas = new Canvas(croppedBitmap);
+        canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
+
+        //3：识别
+        runInBackground(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        final List<Detector.Recognition> results = detector.recognizeImage(croppedBitmap);
+
+
+                        float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
+                        final List<Detector.Recognition> mappedRecognitions =
+                                new ArrayList<Detector.Recognition>();
+                        for (final Detector.Recognition result : results) {
+                            if(result.getTitle().equals("person")){
+                                SopCastLog.d(TAG, "person : " + result.getTitle());
+                            }
+                            final RectF location = result.getLocation();
+                            if (location != null && result.getConfidence() >= minimumConfidence) {
+                                cropToFrameTransform.mapRect(location);
+
+                                result.setLocation(location);
+                                mappedRecognitions.add(result);
+                            }
+                        }
+                    }
+                }
+        );
+    }
+
+    protected int getScreenOrientation() {
+        WindowManager manager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        Display display = manager.getDefaultDisplay();
+        switch (display.getRotation()) {
+            case Surface.ROTATION_270:
+                return 270;
+            case Surface.ROTATION_180:
+                return 180;
+            case Surface.ROTATION_90:
+                return 90;
+            default:
+                return 0;
+        }
     }
 
     @SuppressLint("InvalidWakeLockTag")
@@ -121,6 +241,13 @@ public class CameraLivingView extends CameraView {
 
     public void setCameraConfiguration(CameraConfiguration cameraConfiguration) {
         CameraHolder.instance().setConfiguration(cameraConfiguration);
+        CameraHolder.instance().setPreviewCallBack(new Camera.PreviewCallback() {
+            @Override
+            public void onPreviewFrame(byte[] data, Camera camera) {
+                Log.e(TAG, "onPreviewFrame ..");
+                doObjectDetect(data,camera);
+            }
+        });
     }
 
     public void setAudioConfiguration(AudioConfiguration audioConfiguration) {
@@ -247,11 +374,32 @@ public class CameraLivingView extends CameraView {
     }
 
     public void pause() {
+
         mStreamController.pause();
+
+        handlerThread.quitSafely();
+        try {
+            handlerThread.join();
+            handlerThread = null;
+            handler = null;
+        } catch (final InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void resume() {
+
         mStreamController.resume();
+
+        handlerThread = new HandlerThread("inference");
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
+    }
+
+    protected synchronized void runInBackground(final Runnable r) {
+        if (handler != null) {
+            handler.post(r);
+        }
     }
 
     public void mute(boolean mute) {

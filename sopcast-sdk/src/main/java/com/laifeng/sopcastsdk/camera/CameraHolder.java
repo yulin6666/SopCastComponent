@@ -5,11 +5,14 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.laifeng.sopcastsdk.camera.exception.CameraHardwareException;
 import com.laifeng.sopcastsdk.camera.exception.CameraNotSupportException;
 import com.laifeng.sopcastsdk.configuration.CameraConfiguration;
 import com.laifeng.sopcastsdk.utils.SopCastLog;
+
+
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,6 +41,8 @@ public class CameraHolder {
     private boolean isTouchMode = false;
     private boolean isOpenBackFirst = false;
     private CameraConfiguration mConfiguration = CameraConfiguration.createDefault();
+
+    private Camera.PreviewCallback cb;
 
     public enum State {
         INIT,
@@ -105,6 +110,12 @@ public class CameraHolder {
         return mCameraDevice;
     }
 
+
+
+    public void setPreviewCallBack(Camera.PreviewCallback pcb){
+        cb = pcb;
+    }
+
     public void setSurfaceTexture(SurfaceTexture texture) {
         mTexture = texture;
         if (mState == State.PREVIEW && mCameraDevice != null && mTexture != null) {
@@ -146,12 +157,7 @@ public class CameraHolder {
         try {
             Log.e(TAG, "setPreviewTexture ..");
             mCameraDevice.setPreviewTexture(mTexture);
-            mCameraDevice.setPreviewCallback(new Camera.PreviewCallback() {
-                @Override
-                public void onPreviewFrame(byte[] data, Camera camera) {
-                    Log.e(TAG, "onPreviewFrame ..");
-                }
-            });
+            mCameraDevice.setPreviewCallback(cb);
             mCameraDevice.startPreview();
             mState = State.PREVIEW;
         } catch (Exception e) {
@@ -159,6 +165,7 @@ public class CameraHolder {
             e.printStackTrace();
         }
     }
+
 
     public synchronized void stopPreview() {
         if (mState != State.PREVIEW) {
