@@ -12,6 +12,8 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -51,6 +53,8 @@ import com.laifeng.sopcastsdk.camera.CameraListener;
 import com.laifeng.sopcastsdk.configuration.AudioConfiguration;
 import com.laifeng.sopcastsdk.configuration.CameraConfiguration;
 import com.laifeng.sopcastsdk.configuration.VideoConfiguration;
+import com.laifeng.sopcastsdk.entity.Watermark;
+import com.laifeng.sopcastsdk.entity.WatermarkPosition;
 import com.laifeng.sopcastsdk.stream.packer.rtmp.RtmpPacker;
 import com.laifeng.sopcastsdk.stream.sender.rtmp.RtmpSender;
 import com.laifeng.sopcastsdk.ui.CameraLivingView;
@@ -1243,10 +1247,10 @@ public class LandscapeActivity extends Activity {
         CameraConfiguration cameraConfiguration = cameraBuilder.build();
         mLFLiveView.setCameraConfiguration(cameraConfiguration);
 
-//        //设置水印
-//        Bitmap watermarkImg = BitmapFactory.decodeResource(getResources(), R.mipmap.watermark);
-//        Watermark watermark = new Watermark(watermarkImg, 50, 25, WatermarkPosition.WATERMARK_ORIENTATION_BOTTOM_RIGHT, 8, 8);
-//        mLFLiveView.setWatermark(watermark);
+        //设置水印
+        Bitmap watermarkImg = BitmapFactory.decodeResource(getResources(), R.mipmap.red);
+        Watermark watermark = new Watermark(watermarkImg, 50, 25, WatermarkPosition.WATERMARK_ORIENTATION_BOTTOM_RIGHT, 8, 8);
+        mLFLiveView.setWatermark(watermark);
 
         //设置预览监听
         mLFLiveView.setCameraOpenListener(new CameraListener() {

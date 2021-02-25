@@ -178,8 +178,8 @@ public class RenderScreen {
         final float watermarkCoords[]= {
                 leftX,  bottomY, 0.0f,
                 leftX, topY, 0.0f,
-                rightX,  bottomY, 0.0f,
-                rightX, topY, 0.0f
+                rightX, topY, 0.0f,
+                rightX,  bottomY, 0.0f
         };
         ByteBuffer bb = ByteBuffer.allocateDirect(watermarkCoords.length * 4);
         bb.order(ByteOrder.nativeOrder());
@@ -220,12 +220,12 @@ public class RenderScreen {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
         //绘制纹理
-        drawWatermark();
+        drawBoundingBox();
 
         GlUtil.checkGlError("draw_E");
     }
 
-    private void drawWatermark() {
+    private void drawBoundingBox() {
         if(mWatermarkImg == null) {
             return;
         }
@@ -259,7 +259,8 @@ public class RenderScreen {
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glEnable(GLES20.GL_BLEND);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+        GLES20.glLineWidth(10);
+        GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, 4);
         GLES20.glDisable(GLES20.GL_BLEND);
     }
 
