@@ -1,6 +1,7 @@
 package com.laifeng.sopcastsdk.video;
 
 import android.annotation.TargetApi;
+import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
@@ -240,6 +241,12 @@ public class MyRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFram
         }
         if (mRenderSrfTex != null) {
             mRenderSrfTex.setWatermark(watermark);
+        }
+    }
+
+    public void drawBoundingBox(boolean open,Bitmap img, int imgWidth, int imgHeight, int orientation, int imgVmargin, int imgHmargin) {
+        if (mRenderScreen != null) {
+            mRenderScreen.setOneBoundBox(open,img,imgWidth,imgHeight,orientation,imgVmargin,imgHmargin);
         }
     }
 

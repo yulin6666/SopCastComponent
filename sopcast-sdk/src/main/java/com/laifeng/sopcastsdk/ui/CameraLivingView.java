@@ -3,6 +3,7 @@ package com.laifeng.sopcastsdk.ui;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.RectF;
@@ -20,6 +21,7 @@ import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import com.laifeng.sopcastsdk.R;
 import com.laifeng.sopcastsdk.audio.AudioUtils;
 import com.laifeng.sopcastsdk.camera.CameraData;
 import com.laifeng.sopcastsdk.camera.CameraHolder;
@@ -33,6 +35,7 @@ import com.laifeng.sopcastsdk.controller.StreamController;
 import com.laifeng.sopcastsdk.controller.audio.NormalAudioController;
 import com.laifeng.sopcastsdk.controller.video.CameraVideoController;
 import com.laifeng.sopcastsdk.entity.Watermark;
+import com.laifeng.sopcastsdk.entity.WatermarkPosition;
 import com.laifeng.sopcastsdk.mediacodec.AudioMediaCodec;
 import com.laifeng.sopcastsdk.mediacodec.MediaCodecHelper;
 import com.laifeng.sopcastsdk.mediacodec.VideoMediaCodec;
@@ -94,6 +97,10 @@ public class CameraLivingView extends CameraView {
     private Handler handler;
     private HandlerThread handlerThread;
 
+    private Bitmap boundingboxColorimg;
+
+    private Thread mUiThread;
+
     public interface LivingStartListener {
         void startError(int error);
 
@@ -103,6 +110,7 @@ public class CameraLivingView extends CameraView {
     public CameraLivingView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initView();
+        mUiThread = Thread.currentThread();
         mContext = context;
     }
 
@@ -195,7 +203,20 @@ public class CameraLivingView extends CameraView {
                     }
                 }
         );
+
+
+        drawBoundingBox(true,50, 25, WatermarkPosition.WATERMARK_ORIENTATION_BOTTOM_RIGHT, 8, 8);
+
     }
+
+    public final void runOnUiThread(Runnable action) {
+        if (Thread.currentThread() != mUiThread) {
+            mHandler.post(action);
+        } else {
+            action.run();
+        }
+    }
+
 
     protected int getScreenOrientation() {
         WindowManager manager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
@@ -418,6 +439,13 @@ public class CameraLivingView extends CameraView {
         mRenderer.setWatermark(watermark);
     }
 
+    public void setBoundingboxColorTexture(Bitmap texture) {
+        boundingboxColorimg = texture;
+    }
+
+    public void drawBoundingBox(boolean open ,int imgWidth, int imgHeight, int orientation, int imgVmargin, int imgHmargin) {
+        mRenderer.drawBoundingBox(true,boundingboxColorimg,imgWidth,imgHeight,orientation,imgVmargin,imgHmargin);
+    }
     public boolean setVideoBps(int bps) {
         return mStreamController.setVideoBps(bps);
     }

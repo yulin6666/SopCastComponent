@@ -1248,9 +1248,9 @@ public class LandscapeActivity extends Activity {
         mLFLiveView.setCameraConfiguration(cameraConfiguration);
 
         //设置水印
-        Bitmap watermarkImg = BitmapFactory.decodeResource(getResources(), R.mipmap.red);
-        Watermark watermark = new Watermark(watermarkImg, 50, 25, WatermarkPosition.WATERMARK_ORIENTATION_BOTTOM_RIGHT, 8, 8);
-        mLFLiveView.setWatermark(watermark);
+        Bitmap redImage = BitmapFactory.decodeResource(getResources(), R.mipmap.red);
+//        Watermark watermark = new Watermark(watermarkImg, 50, 25, WatermarkPosition.WATERMARK_ORIENTATION_BOTTOM_RIGHT, 8, 8);
+        mLFLiveView.setBoundingboxColorTexture(redImage);
 
         //设置预览监听
         mLFLiveView.setCameraOpenListener(new CameraListener() {

@@ -41,10 +41,17 @@ public class RenderScreen {
     private FloatBuffer mCameraTexCoordBuffer;
 
     private Bitmap mWatermarkImg;
-    private Watermark mWatermark;
     private FloatBuffer mWatermarkVertexBuffer;
     private int mWatermarkTextureId = -1;
     private float mWatermarkRatio = 1.0f;
+
+    private boolean mDrawBoundingBox;
+    private Bitmap mimgBitmap;
+    private int mimgWidth;
+    private int mimgHeight;
+    private int morientation;
+    private int mimgVmargin;
+    private int mimgHmargin;
 
     public RenderScreen(int id) {
         mFboTexId = id;
@@ -64,9 +71,6 @@ public class RenderScreen {
 
     public void setVideoSize(int width, int height) {
         mWatermarkRatio = mScreenW / ((float)width);
-        if(mWatermark != null) {
-            initWatermarkVertexBuffer();
-        }
     }
 
     private void initCameraTexCoordBuffer() {
@@ -127,9 +131,16 @@ public class RenderScreen {
     }
 
     public void setWatermark(Watermark watermark) {
-        mWatermark = watermark;
-        mWatermarkImg = watermark.markImg;
-        initWatermarkVertexBuffer();
+    }
+
+    public void setOneBoundBox(boolean open,Bitmap img, int imgWidth, int imgHeight, int orientation, int imgVmargin, int imgHmargin) {
+        mDrawBoundingBox = open;
+        mimgBitmap = img;
+        mimgHeight = imgHeight;
+        mimgWidth = imgWidth;
+        morientation = orientation;
+        mimgVmargin = imgVmargin;
+        mimgHmargin = imgHmargin;
     }
 
     private void initWatermarkVertexBuffer() {
@@ -137,21 +148,21 @@ public class RenderScreen {
             return;
         }
 
-        int width = (int) (mWatermark.width*mWatermarkRatio);
-        int height = (int) (mWatermark.height*mWatermarkRatio);
-        int vMargin = (int) (mWatermark.vMargin*mWatermarkRatio);
-        int hMargin = (int) (mWatermark.hMargin*mWatermarkRatio);
+        int width = (int) (mimgWidth *mWatermarkRatio);
+        int height = (int) (mimgHeight *mWatermarkRatio);
+        int vMargin = (int) (mimgVmargin *mWatermarkRatio);
+        int hMargin = (int) (mimgHmargin *mWatermarkRatio);
 
         boolean isTop, isRight;
-        if(mWatermark.orientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT
-                || mWatermark.orientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_RIGHT) {
+        if(morientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT
+                || morientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_RIGHT) {
             isTop = true;
         } else {
             isTop = false;
         }
 
-        if(mWatermark.orientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_RIGHT
-                || mWatermark.orientation == WatermarkPosition.WATERMARK_ORIENTATION_BOTTOM_RIGHT) {
+        if(morientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_RIGHT
+                || morientation == WatermarkPosition.WATERMARK_ORIENTATION_BOTTOM_RIGHT) {
             isRight = true;
         } else {
             isRight = false;
@@ -219,16 +230,17 @@ public class RenderScreen {
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
-        //绘制纹理
-        drawBoundingBox();
-
+        if(mDrawBoundingBox){
+            drawBoundingBox();
+        }
         GlUtil.checkGlError("draw_E");
     }
 
-    private void drawBoundingBox() {
-        if(mWatermarkImg == null) {
-            return;
-        }
+
+    public void drawBoundingBox() {
+
+        initWatermarkVertexBuffer();
+
         mWatermarkVertexBuffer.position(0);
         GLES20.glVertexAttribPointer(maPositionHandle,
                 3, GLES20.GL_FLOAT, false, 4 * 3, mWatermarkVertexBuffer);
@@ -243,7 +255,7 @@ public class RenderScreen {
             int[] textures = new int[1];
             GLES20.glGenTextures(1, textures, 0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, mWatermarkImg, 0);
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, mimgBitmap, 0);
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
                     GLES20.GL_LINEAR);
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
