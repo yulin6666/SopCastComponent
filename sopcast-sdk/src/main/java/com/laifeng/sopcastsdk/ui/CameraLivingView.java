@@ -85,7 +85,7 @@ public class CameraLivingView extends CameraView {
 
     private static final int TF_OD_API_INPUT_SIZE = 300;
     private static final boolean TF_OD_API_IS_QUANTIZED = true;
-    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.5f;
+    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.7f;
     private static final String TF_OD_API_MODEL_FILE = "detect.tflite";
     private static final String TF_OD_API_LABELS_FILE = "labelmap.txt";
     private int[] rgbBytes = null;
@@ -166,7 +166,13 @@ public class CameraLivingView extends CameraView {
                             TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE,
                             sensorOrientation, false);
             cropToFrameTransform = new Matrix();
-            frameToCropTransform.invert(cropToFrameTransform);
+
+             Matrix screenToCropTransform = ImageUtils.getTransformationMatrix(
+                     1470, 672,
+                     TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE,
+                     sensorOrientation, false);
+
+            screenToCropTransform.invert(cropToFrameTransform);
 
 
         }
@@ -186,26 +192,28 @@ public class CameraLivingView extends CameraView {
 
 
                         float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-                        final List<Detector.Recognition> mappedRecognitions =
-                                new ArrayList<Detector.Recognition>();
+                        boolean find = false;
                         for (final Detector.Recognition result : results) {
-                            if(result.getTitle().equals("person")){
+                            if(result.getTitle().equals("person") && result.getConfidence() >= minimumConfidence ) {
                                 SopCastLog.d(TAG, "person : " + result.getTitle());
+                                final RectF location = result.getLocation();
+                                if (location != null && result.getConfidence() >= minimumConfidence) {
+                                    cropToFrameTransform.mapRect(location);
+                                    drawBoundingBox(true, location.left, location.right, location.bottom, location.top);
+                                }
+                                find = true;
                             }
-                            final RectF location = result.getLocation();
-                            if (location != null && result.getConfidence() >= minimumConfidence) {
-                                cropToFrameTransform.mapRect(location);
+                        }
 
-                                result.setLocation(location);
-                                mappedRecognitions.add(result);
-                            }
+                        if(!find){
+                            drawBoundingBox(false, 0,0, 0, 0);
                         }
                     }
                 }
         );
 
 
-        drawBoundingBox(true,50, 25, WatermarkPosition.WATERMARK_ORIENTATION_BOTTOM_RIGHT, 8, 8);
+//        drawBoundingBox(true,367,1102,168,504);
 
     }
 
@@ -443,8 +451,8 @@ public class CameraLivingView extends CameraView {
         boundingboxColorimg = texture;
     }
 
-    public void drawBoundingBox(boolean open ,int imgWidth, int imgHeight, int orientation, int imgVmargin, int imgHmargin) {
-        mRenderer.drawBoundingBox(true,boundingboxColorimg,imgWidth,imgHeight,orientation,imgVmargin,imgHmargin);
+    public void drawBoundingBox(boolean open ,float leftX, float rightX, float bottomY, float topY) {
+        mRenderer.drawBoundingBox(true,boundingboxColorimg,leftX,rightX,bottomY,topY);
     }
     public boolean setVideoBps(int bps) {
         return mStreamController.setVideoBps(bps);

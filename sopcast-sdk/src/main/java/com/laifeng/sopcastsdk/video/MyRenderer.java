@@ -244,9 +244,9 @@ public class MyRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFram
         }
     }
 
-    public void drawBoundingBox(boolean open,Bitmap img, int imgWidth, int imgHeight, int orientation, int imgVmargin, int imgHmargin) {
+    public void drawBoundingBox(boolean open,Bitmap img, float leftX, float rightX, float bottomY, float topY) {
         if (mRenderScreen != null) {
-            mRenderScreen.setOneBoundBox(open,img,imgWidth,imgHeight,orientation,imgVmargin,imgHmargin);
+            mRenderScreen.setOneBoundBox(open,img,leftX,rightX,bottomY,topY);
         }
     }
 

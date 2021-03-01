@@ -53,6 +53,11 @@ public class RenderScreen {
     private int mimgVmargin;
     private int mimgHmargin;
 
+    private float mleftX;
+    private float mrightX;
+    private float mbottomY;
+    private float mtopY;
+
     public RenderScreen(int id) {
         mFboTexId = id;
         initGL();
@@ -133,59 +138,64 @@ public class RenderScreen {
     public void setWatermark(Watermark watermark) {
     }
 
-    public void setOneBoundBox(boolean open,Bitmap img, int imgWidth, int imgHeight, int orientation, int imgVmargin, int imgHmargin) {
+    public void setOneBoundBox(boolean open,Bitmap img, float leftX, float rightX, float bottomY, float topY) {
         mDrawBoundingBox = open;
         mimgBitmap = img;
-        mimgHeight = imgHeight;
-        mimgWidth = imgWidth;
-        morientation = orientation;
-        mimgVmargin = imgVmargin;
-        mimgHmargin = imgHmargin;
+        mleftX = leftX;
+        mrightX = rightX;
+        mbottomY = bottomY;
+        mtopY= topY;
     }
 
     private void initWatermarkVertexBuffer() {
-        if (mScreenW <= 0 || mScreenH <= 0) {
-            return;
-        }
+//        if (mScreenW <= 0 || mScreenH <= 0) {
+//            return;
+//        }
+//
+//        int width = (int) (mimgWidth *mWatermarkRatio);
+//        int height = (int) (mimgHeight *mWatermarkRatio);
+//        int vMargin = (int) (mimgVmargin *mWatermarkRatio);
+//        int hMargin = (int) (mimgHmargin *mWatermarkRatio);
+////
+//        boolean isTop, isRight;
+//        if(morientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT
+//                || morientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_RIGHT) {
+//            isTop = true;
+//        } else {
+//            isTop = false;
+//        }
+//
+//        if(morientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_RIGHT
+//                || morientation == WatermarkPosition.WATERMARK_ORIENTATION_BOTTOM_RIGHT) {
+//            isRight = true;
+//        } else {
+//            isRight = false;
+//        }
+//
+//        float leftX = (mScreenW/2.0f - hMargin - width)/(mScreenW/2.0f);
+//        float rightX = (mScreenW/2.0f - hMargin)/(mScreenW/2.0f);
+//
+//        float topY = (mScreenH/2.0f - vMargin)/(mScreenH/2.0f);
+//        float bottomY = (mScreenH/2.0f - vMargin - height)/(mScreenH/2.0f);
+//
+//        float temp;
+//
+//        if(!isRight) {
+//            temp = leftX;
+//            leftX = -rightX;
+//            rightX = -temp;
+//        }
+//        if(!isTop) {
+//            temp = topY;
+//            topY = -bottomY;
+//            bottomY = -temp;
+//        }
 
-        int width = (int) (mimgWidth *mWatermarkRatio);
-        int height = (int) (mimgHeight *mWatermarkRatio);
-        int vMargin = (int) (mimgVmargin *mWatermarkRatio);
-        int hMargin = (int) (mimgHmargin *mWatermarkRatio);
+        float leftX = (mleftX/mScreenW)*2 -1;
+        float rightX = (mrightX/mScreenW)*2 -1;
+        float topY = (mtopY/mScreenH)*2 -1;
+        float bottomY = (mbottomY/mScreenH)*2 -1;
 
-        boolean isTop, isRight;
-        if(morientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_LEFT
-                || morientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_RIGHT) {
-            isTop = true;
-        } else {
-            isTop = false;
-        }
-
-        if(morientation == WatermarkPosition.WATERMARK_ORIENTATION_TOP_RIGHT
-                || morientation == WatermarkPosition.WATERMARK_ORIENTATION_BOTTOM_RIGHT) {
-            isRight = true;
-        } else {
-            isRight = false;
-        }
-
-        float leftX = (mScreenW/2.0f - hMargin - width)/(mScreenW/2.0f);
-        float rightX = (mScreenW/2.0f - hMargin)/(mScreenW/2.0f);
-
-        float topY = (mScreenH/2.0f - vMargin)/(mScreenH/2.0f);
-        float bottomY = (mScreenH/2.0f - vMargin - height)/(mScreenH/2.0f);
-
-        float temp;
-
-        if(!isRight) {
-            temp = leftX;
-            leftX = -rightX;
-            rightX = -temp;
-        }
-        if(!isTop) {
-            temp = topY;
-            topY = -bottomY;
-            bottomY = -temp;
-        }
         final float watermarkCoords[]= {
                 leftX,  bottomY, 0.0f,
                 leftX, topY, 0.0f,
