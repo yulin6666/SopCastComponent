@@ -94,6 +94,7 @@ public class CameraLivingView extends CameraView {
     private Bitmap croppedBitmap = null;
     private Matrix frameToCropTransform;
     private Matrix cropToFrameTransform;
+    private Matrix frameToCanvasMatrix;
     private Handler handler;
     private HandlerThread handlerThread;
 
@@ -166,20 +167,25 @@ public class CameraLivingView extends CameraView {
                             TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE,
                             sensorOrientation, false);
             cropToFrameTransform = new Matrix();
-
-             Matrix screenToCropTransform = ImageUtils.getTransformationMatrix(
-                     1470, 672,
-                     TF_OD_API_INPUT_SIZE, TF_OD_API_INPUT_SIZE,
-                     sensorOrientation, false);
-
-            screenToCropTransform.invert(cropToFrameTransform);
-
+            frameToCropTransform.invert(cropToFrameTransform);
+            //到屏幕的隐射
+            final boolean rotated = sensorOrientation % 180 == 90;
+            final float multiplier = 1;
+            frameToCanvasMatrix =
+                    ImageUtils.getTransformationMatrix(
+                            size.width,
+                            size.height,
+                            (int) (multiplier * (rotated ? size.height : size.width)),
+                            (int) (multiplier * (rotated ? size.width : size.height)),
+                            sensorOrientation,
+                            false);
 
         }
         ImageUtils.convertYUV420SPToARGB8888(data, size.width, size.height, rgbBytes);
         rgbFrameBitmap.setPixels(rgbBytes, 0, size.width, 0, 0, size.width, size.height);
 
         //2：裁剪
+//
         final Canvas canvas = new Canvas(croppedBitmap);
         canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
 
@@ -188,6 +194,7 @@ public class CameraLivingView extends CameraView {
                 new Runnable() {
                     @Override
                     public void run() {
+//                        croppedBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.people);
                         final List<Detector.Recognition> results = detector.recognizeImage(croppedBitmap);
 
 
@@ -199,6 +206,7 @@ public class CameraLivingView extends CameraView {
                                 final RectF location = result.getLocation();
                                 if (location != null && result.getConfidence() >= minimumConfidence) {
                                     cropToFrameTransform.mapRect(location);
+                                    frameToCanvasMatrix.mapRect(location);
                                     drawBoundingBox(true, location.left, location.right, location.bottom, location.top);
                                 }
                                 find = true;
