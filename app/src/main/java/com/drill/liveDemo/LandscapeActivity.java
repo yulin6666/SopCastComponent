@@ -2107,6 +2107,46 @@ public class LandscapeActivity extends Activity {
         }).start();
     }
 
+    private void getQueryInfo2(final int type) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                String url;
+                url = queryUrl+"?fid="+mScanContent;
+
+                String fidInfo = httpGet(url);
+
+                if(fidInfo.contains("系统错误")||fidInfo.equals("")){
+                    Message msg = new Message();
+                    msg.what = 15;
+                    msg.obj = fidInfo;
+                    cameraHandler.sendMessage(msg);
+                    return;
+                }
+
+                if(type == 0){
+                    Message msg = new Message();
+                    msg.what = 11;
+                    msg.obj = fidInfo;
+                    cameraHandler.sendMessage(msg);
+                }else if(type == 1){
+                    Message msg = new Message();
+                    msg.what = 12;
+                    msg.obj = fidInfo;
+                    cameraHandler.sendMessage(msg);
+                }else{//查询列表
+                    Message msg = new Message();
+                    msg.what = 14;
+                    msg.obj = fidInfo;
+                    cameraHandler.sendMessage(msg);
+                }
+
+            }
+        }).start();
+    }
+
     private void getQueryDeviceListInfo(final String queryKeyWord) {
 
         new Thread(new Runnable() {
@@ -2387,78 +2427,87 @@ public class LandscapeActivity extends Activity {
                     displayScanDialog(mScanContent);
                 }
 
-                if(mScanContent.contains("fid")){
+//                if(mScanContent.contains("fid")){
+//
+//                    try{
+//                        String fid ="";
+//                        String id ="";
+//
+//                        JSONObject scanContent = new JSONObject(mScanContent);//转换为JSONObject
+//                        Iterator<?> it = scanContent.keys();
+//                        String key = "";
+//                        while(it.hasNext()) {//遍历JSONObject
+//                            key = (String) it.next().toString();
+//                            if(key.equals("fid")){
+//                                fid = scanContent.getString("fid");
+//                            }else if(key.equals("id")){
+//                                id = scanContent.getString("id");
+//                            }
+//                        }
+//                        Toast.makeText(LandscapeActivity.this, "正在请求服务器，请等待", Toast.LENGTH_SHORT).show();
+//                        if(requestCode == 111){
+//                            getQueryInfo(fid,id,0);
+//                        }else if(requestCode == 112){
+//                            getQueryInfo(fid,id,1);
+//                        }
+//                    }catch (JSONException e){
+//                        e.printStackTrace();
+//                    }
+//
+//                }
 
-                    try{
-                        String fid ="";
-                        String id ="";
-
-                        JSONObject scanContent = new JSONObject(mScanContent);//转换为JSONObject
-                        Iterator<?> it = scanContent.keys();
-                        String key = "";
-                        while(it.hasNext()) {//遍历JSONObject
-                            key = (String) it.next().toString();
-                            if(key.equals("fid")){
-                                fid = scanContent.getString("fid");
-                            }else if(key.equals("id")){
-                                id = scanContent.getString("id");
-                            }
-                        }
-                        Toast.makeText(LandscapeActivity.this, "正在请求服务器，请等待", Toast.LENGTH_SHORT).show();
-                        if(requestCode == 111){
-                            getQueryInfo(fid,id,0);
-                        }else if(requestCode == 112){
-                            getQueryInfo(fid,id,1);
-                        }
-                    }catch (JSONException e){
-                        e.printStackTrace();
-                    }
-
+                Toast.makeText(LandscapeActivity.this, "正在请求服务器，请等待", Toast.LENGTH_SHORT).show();
+                if(requestCode == 111){
+                    getQueryInfo2(0);
+                }else if(requestCode == 112){
+                    getQueryInfo2(1);
                 }
 
-                new Thread(new Runnable() {
-                    public void run() {
-                        String uriAPI = "http://" + mCtrlip + "/api/newScanningMessage?deviceID=" + mdeviceID;
-                        HttpClient postClient = new DefaultHttpClient();
-                        HttpPost httpPost = new HttpPost(uriAPI);
-                        List<NameValuePair> params = new ArrayList<NameValuePair>();
-                        if (!TextUtils.isEmpty(mScanContent)) {
-                            params.add(new BasicNameValuePair("content", mScanContent));
-                        }
-                        long time = System.currentTimeMillis();//long now = android.os.SystemClock.uptimeMillis();
-                        params.add(new BasicNameValuePair("scanningTime", String.format("%d", time)));
-                        UrlEncodedFormEntity entity;
-                        HttpResponse response;
-                        try {
-                            entity = new UrlEncodedFormEntity(params, "utf-8");
-                            httpPost.setEntity(entity);
-                            response = postClient.execute(httpPost);
 
-                            if (response.getStatusLine().getStatusCode() == 200) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        // 在这里更新UI
-                                        Toast.makeText(LandscapeActivity.this, "二维码扫描成功，请在后台查收", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
 
-                            //
-                            if (!scanUploadUrl.isEmpty()) {
-                                sendScanResultDirectToServer();
-                            }
-
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        } catch (ClientProtocolException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        ;
-                    }
-                }).start();
+//                new Thread(new Runnable() {
+//                    public void run() {
+//                        String uriAPI = "http://" + mCtrlip + "/api/newScanningMessage?deviceID=" + mdeviceID;
+//                        HttpClient postClient = new DefaultHttpClient();
+//                        HttpPost httpPost = new HttpPost(uriAPI);
+//                        List<NameValuePair> params = new ArrayList<NameValuePair>();
+//                        if (!TextUtils.isEmpty(mScanContent)) {
+//                            params.add(new BasicNameValuePair("content", mScanContent));
+//                        }
+//                        long time = System.currentTimeMillis();//long now = android.os.SystemClock.uptimeMillis();
+//                        params.add(new BasicNameValuePair("scanningTime", String.format("%d", time)));
+//                        UrlEncodedFormEntity entity;
+//                        HttpResponse response;
+//                        try {
+//                            entity = new UrlEncodedFormEntity(params, "utf-8");
+//                            httpPost.setEntity(entity);
+//                            response = postClient.execute(httpPost);
+//
+//                            if (response.getStatusLine().getStatusCode() == 200) {
+//                                runOnUiThread(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        // 在这里更新UI
+//                                        Toast.makeText(LandscapeActivity.this, "二维码扫描成功，请在后台查收", Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
+//                            }
+//
+//                            //
+//                            if (!scanUploadUrl.isEmpty()) {
+//                                sendScanResultDirectToServer();
+//                            }
+//
+//                        } catch (UnsupportedEncodingException e) {
+//                            e.printStackTrace();
+//                        } catch (ClientProtocolException e) {
+//                            e.printStackTrace();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                        ;
+//                    }
+//                }).start();
             }
             init();
         }
