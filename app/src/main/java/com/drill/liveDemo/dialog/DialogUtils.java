@@ -480,7 +480,12 @@ public class DialogUtils extends DialogFragment {
             return null;
 
         LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View myCustomView = inflater.inflate(R.layout.dialog_display4_layout, null);
+        View myCustomView;
+        if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            myCustomView = inflater.inflate(R.layout.dialog_display4_layout, null);
+        }else{
+            myCustomView = inflater.inflate(R.layout.dialog_display4_layout_land, null);
+        }
         TextView tvTitle = (TextView) myCustomView.findViewById(R.id.tv_title);
         Button btnNegative = (Button) myCustomView.findViewById(R.id.btn_negative);
 
