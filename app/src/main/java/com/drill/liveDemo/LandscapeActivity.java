@@ -253,7 +253,7 @@ public class LandscapeActivity extends Activity {
                     processFidInfo((String)msg.obj,1);
                     break;
                 case 13://处理查询结果
-                    processQueryResult((String)msg.obj);
+                     processQueryResult((String)msg.obj);
                     break;
                 case 14://查询显示info
                     processFidInfo((String)msg.obj,2);
@@ -263,6 +263,9 @@ public class LandscapeActivity extends Activity {
                     break;
                 case 16://第一次启动打开控制系统
                     startControlThread();
+                    break;
+                case 17:
+                    Toast.makeText(LandscapeActivity.this, "查询数据不存在！", Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     break;
@@ -1215,8 +1218,8 @@ public class LandscapeActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                mScanBeforeButton.setEnabled(false);
-                mScanBeforeButton.setBackgroundColor(Color.GRAY);
+                mScanBeforeButton.setEnabled(true);
+                mScanBeforeButton.setBackgroundColor(Color.RED);
                 //停止直播
                 if (isRecording)
                     stopLive();
@@ -1256,8 +1259,8 @@ public class LandscapeActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                mScanAfterButton.setEnabled(false);
-                mScanAfterButton.setBackgroundColor(Color.GRAY);
+                mScanAfterButton.setEnabled(true);
+                mScanAfterButton.setBackgroundColor(Color.RED);
                 //停止直播
                 if (isRecording)
                     stopLive();
@@ -1769,10 +1772,10 @@ public class LandscapeActivity extends Activity {
             @Override
             public void onOpenSuccess() {
                 Toast.makeText(LandscapeActivity.this, "相机打开成功", Toast.LENGTH_LONG).show();
-                mScanBeforeButton.setEnabled(false);
-                mScanBeforeButton.setBackgroundColor(Color.GRAY);
-                mScanAfterButton.setEnabled(false);
-                mScanAfterButton.setBackgroundColor(Color.GRAY);
+                mScanBeforeButton.setEnabled(true);
+                mScanBeforeButton.setBackgroundColor(Color.RED);
+                mScanAfterButton.setEnabled(true);
+                mScanAfterButton.setBackgroundColor(Color.RED);
             }
 
             @Override
@@ -2158,9 +2161,15 @@ public class LandscapeActivity extends Activity {
 
                 String searchList = httpGet(url);
 
-                Message msg = new Message();
-                msg.what = 13;
-                msg.obj = searchList;
+                Message msg;
+                if(searchList.equals("")){
+                    msg = new Message();
+                    msg.what = 17;
+                }else{
+                    msg = new Message();
+                    msg.what = 13;
+                    msg.obj = searchList;
+                }
                 cameraHandler.sendMessage(msg);
 
             }
