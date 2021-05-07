@@ -14,8 +14,8 @@ android {
         applicationId "com.drill.liveDemo"
         minSdkVersion min_sdk_version
         targetSdkVersion target_sdk_version
-        versionCode 640
-        versionName '6.4.0'
+        versionCode 650
+        versionName '6.5.0'
     }
     buildTypes {
         release {
