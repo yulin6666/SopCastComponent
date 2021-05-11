@@ -411,8 +411,8 @@ public class LandscapeActivity extends Activity {
                             createSchedulePool();
                             //重新创建上报池
                             createUploadPool();
-                            //重新开启计数器
-                            startTiggerTimer();
+//                            //重新开启计数器
+//                            startTiggerTimer();
                             return true;
                         }
 
@@ -1115,7 +1115,7 @@ public class LandscapeActivity extends Activity {
     private void openStopTimer(boolean enable) {
         triggerEnable = enable;
         if (triggerEnable) {
-            startTiggerTimer();
+//            startTiggerTimer();
         }
     }
 
