@@ -1018,6 +1018,7 @@ public class LandscapeActivity extends Activity {
             String time = dateTimeformat2.format(new Date());
             originObject.put("scanTime",time);
             originObject.put("type",type);
+            originObject.put("scanContent",mScanContent);
             ret = originObject.toString();
         }catch(JSONException e){
             e.printStackTrace();
