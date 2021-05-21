@@ -12,40 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!--<com.drill.liveDemo.ui.TopRightWeightedLayout-->
-        <!--android:layout_width="75dp"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:background="#4d000000"-->
-        <!--android:clipChildren="false"-->
-        <!--android:clipToPadding="false"-->
-        <!--android:gravity="center"-->
-        <!--android:orientation="vertical"-->
-        <!--android:visibility="visible">-->
-
-        <!--&lt;!&ndash;<ImageButton&ndash;&gt;-->
-        <!--&lt;!&ndash;android:id="@+id/backBtn"&ndash;&gt;-->
-        <!--&lt;!&ndash;android:layout_width="30dp"&ndash;&gt;-->
-        <!--&lt;!&ndash;android:layout_height="30dp"&ndash;&gt;-->
-        <!--&lt;!&ndash;android:background="@mipmap/back" />&ndash;&gt;-->
-        <!--&lt;!&ndash;<com.drill.liveDemo.ui.MultiToggleImageButton&ndash;&gt;-->
-        <!--&lt;!&ndash;android:id="@+id/camera_flash_button"&ndash;&gt;-->
-        <!--&lt;!&ndash;style="@style/NiceOption"&ndash;&gt;-->
-        <!--&lt;!&ndash;app:imageIds="@array/camera_flashmode_icons" />&ndash;&gt;-->
-        <!--&lt;!&ndash;<com.drill.liveDemo.ui.MultiToggleImageButton&ndash;&gt;-->
-        <!--&lt;!&ndash;android:id="@+id/camera_switch_button"&ndash;&gt;-->
-        <!--&lt;!&ndash;style="@style/NiceOption"&ndash;&gt;-->
-        <!--&lt;!&ndash;app:imageIds="@array/camera_id_icons" />&ndash;&gt;-->
-        <!--&lt;!&ndash;<com.drill.liveDemo.ui.MultiToggleImageButton&ndash;&gt;-->
-        <!--&lt;!&ndash;android:id="@+id/id_button"&ndash;&gt;-->
-        <!--&lt;!&ndash;style="@style/NiceOption"&ndash;&gt;-->
-        <!--&lt;!&ndash;app:imageIds="@array/camera_render_icons" />&ndash;&gt;-->
-
-        <!--<ImageButton-->
-            <!--android:id="@+id/id_scan_button"-->
-            <!--android:layout_width="60dp"-->
-            <!--android:layout_height="60dp"-->
-            <!--android:background="@mipmap/scan" />-->
-    <!--</com.drill.liveDemo.ui.TopRightWeightedLayout>-->
+    <edu.sfsu.cs.orange.ocr.ViewfinderView
+        android:id="@+id/viewfinder_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="#0000"/>
 
     <LinearLayout
         android:layout_width="100dp"
@@ -54,11 +25,7 @@
         android:gravity="center"
         android:layout_alignParentRight="true">
 
-        <!--<ImageButton-->
-            <!--android:id="@+id/btnRecord"-->
-            <!--android:layout_width="60dp"-->
-            <!--android:layout_height="60dp"-->
-            android:background="@mipmap/ic_record_start" />
+
         <ImageButton
         android:id="@+id/id_scan_button"
         android:layout_width="60dp"
