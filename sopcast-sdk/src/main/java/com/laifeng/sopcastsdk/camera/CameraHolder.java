@@ -1,10 +1,13 @@
 package com.laifeng.sopcastsdk.camera;
 
 import android.annotation.TargetApi;
+import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.util.Log;
+import android.widget.ResourceCursorTreeAdapter;
 
 import com.laifeng.sopcastsdk.camera.exception.CameraHardwareException;
 import com.laifeng.sopcastsdk.camera.exception.CameraNotSupportException;
@@ -14,6 +17,8 @@ import com.laifeng.sopcastsdk.utils.SopCastLog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import edu.sfsu.cs.orange.ocr.PlanarYUVLuminanceSource;
 
 /**
  * @Title: CameraHolder
@@ -115,6 +120,14 @@ public class CameraHolder {
                     @Override
                     public void onPreviewFrame(byte[] data, Camera camera) {
                         Log.e(TAG, "onPreviewFrame ..");
+
+//                        Rect rect = getFramingRectInPreview();
+//                        if (rect == null) {
+//                            return null;
+//                        }
+//                        // Go ahead and assume it's YUV rather than die.
+//                        return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
+//                                rect.width(), rect.height(), reverseImage);
                     }
                 });
             } catch (IOException e) {
@@ -149,7 +162,35 @@ public class CameraHolder {
             mCameraDevice.setPreviewCallback(new Camera.PreviewCallback() {
                 @Override
                 public void onPreviewFrame(byte[] data, Camera camera) {
-                    Log.e(TAG, "onPreviewFrame ..");
+                    Log.e(TAG, "onPreviewFrame ..,width:"+mCameraData.cameraWidth+",height:"+mCameraData.cameraHeight+"+landscape:%d"+isLandscape());
+
+                    //拿到当前帧区域
+                    Point screenResolution = new Point();
+                    if(isLandscape()){
+                        screenResolution.x= 1470;
+                        screenResolution.y = 672;
+                    }else{
+                        screenResolution.x= 720;
+                        screenResolution.y = 1470;
+                    }
+                    int frameWidth = screenResolution.x * 1/4;
+                    int frameHeight = screenResolution.y * 1/4;
+                    int leftOffset = (screenResolution.x - frameWidth) / 2;
+                    int topOffset = (screenResolution.y - frameHeight) / 2;
+                    Rect rect = new Rect(leftOffset, topOffset, leftOffset + frameWidth, topOffset + frameHeight);
+                    //帧等比例兑换
+                    Point cameraResolution = new Point();
+                    cameraResolution.x = mCameraData.cameraWidth;
+                    cameraResolution.y = mCameraData.cameraHeight;
+                    rect.left = rect.left * cameraResolution.x / screenResolution.x;
+                    rect.right = rect.right * cameraResolution.x / screenResolution.x;
+                    rect.top = rect.top * cameraResolution.y / screenResolution.y;
+                    rect.bottom = rect.bottom * cameraResolution.y / screenResolution.y;
+
+                    PlanarYUVLuminanceSource source = new PlanarYUVLuminanceSource(data, cameraResolution.x, cameraResolution.y, rect.left, rect.top,
+                            rect.width(), rect.height(), false);
+
+                    Bitmap bitmap = source.renderCroppedGreyscaleBitmap();
                 }
             });
             mCameraDevice.startPreview();

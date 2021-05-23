@@ -55,6 +55,12 @@ public final class ViewfinderView extends View {
   private final int frameColor;
   private final int cornerColor;
   private Context mContext;
+
+  private static final int MIN_FRAME_WIDTH = 50; // originally 240
+  private static final int MIN_FRAME_HEIGHT = 20; // originally 240
+  private static final int MAX_FRAME_WIDTH = 800; // originally 480
+  private static final int MAX_FRAME_HEIGHT = 600; // originally 360
+
   // This constructor is used when the class is built from an XML resource.
   public ViewfinderView(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -71,22 +77,28 @@ public final class ViewfinderView extends View {
   @SuppressWarnings("unused")
   @Override
   public void onDraw(Canvas canvas) {
-    Rect frame = new Rect();
 
+    Point screenResolution = new Point();
+    screenResolution.x= canvas.getWidth();
+    screenResolution.y = canvas.getHeight();
 
-    if (frame == null) {
-      return;
+    int frameWidth = screenResolution.x * 1/4;
+    if (frameWidth < MIN_FRAME_WIDTH) {
+      frameWidth = MIN_FRAME_WIDTH;
+    } else if (frameWidth > MAX_FRAME_WIDTH) {
+      frameWidth = MAX_FRAME_WIDTH;
     }
-    int width;
-    int height;
-
-    width = canvas.getWidth();
-    height = canvas.getHeight();
-
-    frame.left = width/3;
-    frame.right = width *2/3;
-    frame.top = height/3;
-    frame.bottom = height *2/3;;
+    int frameHeight = screenResolution.y * 1/4;
+    if (frameHeight < MIN_FRAME_HEIGHT) {
+      frameHeight = MIN_FRAME_HEIGHT;
+    } else if (frameHeight > MAX_FRAME_HEIGHT) {
+      frameHeight = MAX_FRAME_HEIGHT;
+    }
+    int leftOffset = (screenResolution.x - frameWidth) / 2;
+    int topOffset = (screenResolution.y - frameHeight) / 2;
+    Rect frame = new Rect(leftOffset, topOffset, leftOffset + frameWidth, topOffset + frameHeight);
+    int width = screenResolution.x;
+    int height = screenResolution.y;
     // Draw the exterior (i.e. outside the framing rect) darkened
     paint.setColor(maskColor);
     canvas.drawRect(0, 0, width, frame.top, paint);
