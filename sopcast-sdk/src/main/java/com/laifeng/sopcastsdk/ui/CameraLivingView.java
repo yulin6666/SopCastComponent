@@ -82,6 +82,7 @@ public class CameraLivingView extends CameraView {
     protected float[] inputMean = new float[]{(float)0.485,(float) 0.456, (float)0.406};
     protected float[] inputStd = new float[]{(float)0.229,(float)0.224,(float)0.225};
     protected float scoreThreshold = 0.1f;
+    private int count = 0;
 
     public interface LivingStartListener {
         void startError(int error);
@@ -187,7 +188,10 @@ public class CameraLivingView extends CameraView {
         CameraHolder.instance().setPreviewCallBack(new Camera.PreviewCallback() {
             @Override
             public void onPreviewFrame(byte[] data, Camera camera) {
-                ocrDetect(data,camera);
+                if(count % 60 == 0){
+                    ocrDetect(data,camera);
+                }
+                count++;
             }
         });
     }

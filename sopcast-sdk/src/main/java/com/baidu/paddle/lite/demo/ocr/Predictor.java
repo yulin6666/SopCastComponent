@@ -314,6 +314,7 @@ public class Predictor {
 
     private void drawResults(ArrayList<OcrResultModel> results) {
         StringBuffer outputResultSb = new StringBuffer("");
+        boolean find = false;
         for (int i = 0; i < results.size(); i++) {
             OcrResultModel result = results.get(i);
             StringBuilder sb = new StringBuilder("");
@@ -324,8 +325,9 @@ public class Predictor {
                 sb.append("(").append(p.x).append(",").append(p.y).append(") ");
             }
             Log.i(TAG, sb.toString()); // show LOG in Logcat panel
-            if(result.getLabel().contains("度")) {
-                outputResultSb.append(result.getLabel()).append("\n");
+            if(result.getLabel().contains("度") && !find) {
+                outputResultSb.append(result.getLabel());
+                find = true;
             }
         }
         outputResult = outputResultSb.toString();
