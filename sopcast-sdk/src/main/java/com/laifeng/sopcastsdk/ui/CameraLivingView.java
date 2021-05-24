@@ -2,6 +2,10 @@ package com.laifeng.sopcastsdk.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
@@ -9,6 +13,7 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.util.AttributeSet;
 
+import com.baidu.paddle.lite.demo.ocr.Predictor;
 import com.laifeng.sopcastsdk.audio.AudioUtils;
 import com.laifeng.sopcastsdk.camera.CameraData;
 import com.laifeng.sopcastsdk.camera.CameraHolder;
@@ -30,6 +35,8 @@ import com.laifeng.sopcastsdk.utils.SopCastLog;
 import com.laifeng.sopcastsdk.utils.SopCastUtils;
 import com.laifeng.sopcastsdk.utils.WeakHandler;
 import com.laifeng.sopcastsdk.video.effect.Effect;
+
+import edu.sfsu.cs.orange.ocr.PlanarYUVLuminanceSource;
 
 /**
  * @Title: CameraLivingView
@@ -61,6 +68,20 @@ public class CameraLivingView extends CameraView {
     private LivingStartListener mLivingStartListener;
     private WeakHandler mHandler = new WeakHandler();
 
+    protected Predictor predictor = new Predictor();
+
+    //模型需要信息
+    protected String modelPath = "models/ocr_v1.1";
+    protected String labelPath = "labels/ppocr_keys_v1.txt";
+    protected String imagePath = "images/5.jpg";
+    protected int cpuThreadNum = 4;
+    protected String cpuPowerMode = "LITE_POWER_HIGH";
+    protected String inputColorFormat = "BGR";
+    protected long[] inputShape = new long[]{1,3,960};
+    protected float[] inputMean = new float[]{(float)0.485,(float) 0.456, (float)0.406};
+    protected float[] inputStd = new float[]{(float)0.229,(float)0.224,(float)0.225};
+    protected float scoreThreshold = 0.1f;
+
     public interface LivingStartListener {
         void startError(int error);
 
@@ -83,6 +104,36 @@ public class CameraLivingView extends CameraView {
         super(context);
         initView();
         mContext = context;
+    }
+
+    public void ocrDetect(byte[] data, Camera camera){
+        //拿到当前帧区域
+        Point screenResolution = new Point();
+        if(CameraHolder.instance().isLandscape()){
+            screenResolution.x= 1470;
+            screenResolution.y = 672;
+        }else{
+            screenResolution.x= 720;
+            screenResolution.y = 1470;
+        }
+        int frameWidth = screenResolution.x * 1/4;
+        int frameHeight = screenResolution.y * 1/4;
+        int leftOffset = (screenResolution.x - frameWidth) / 2;
+        int topOffset = (screenResolution.y - frameHeight) / 2;
+        Rect rect = new Rect(leftOffset, topOffset, leftOffset + frameWidth, topOffset + frameHeight);
+        //帧等比例兑换
+        Point cameraResolution = new Point();
+        cameraResolution.x = CameraHolder.instance().getCameraData().cameraWidth;
+        cameraResolution.y = CameraHolder.instance().getCameraData().cameraHeight;
+        rect.left = rect.left * cameraResolution.x / screenResolution.x;
+        rect.right = rect.right * cameraResolution.x / screenResolution.x;
+        rect.top = rect.top * cameraResolution.y / screenResolution.y;
+        rect.bottom = rect.bottom * cameraResolution.y / screenResolution.y;
+
+        PlanarYUVLuminanceSource source = new PlanarYUVLuminanceSource(data, cameraResolution.x, cameraResolution.y, rect.left, rect.top,
+                rect.width(), rect.height(), false);
+
+        Bitmap bitmap = source.renderCroppedGreyscaleBitmap();
     }
 
     private void initView() {
@@ -121,6 +172,12 @@ public class CameraLivingView extends CameraView {
 
     public void setCameraConfiguration(CameraConfiguration cameraConfiguration) {
         CameraHolder.instance().setConfiguration(cameraConfiguration);
+        CameraHolder.instance().setPreviewCallBack(new Camera.PreviewCallback() {
+            @Override
+            public void onPreviewFrame(byte[] data, Camera camera) {
+                ocrDetect(data,camera);
+            }
+        });
     }
 
     public void setAudioConfiguration(AudioConfiguration audioConfiguration) {
