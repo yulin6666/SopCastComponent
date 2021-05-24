@@ -9,6 +9,7 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.widget.ResourceCursorTreeAdapter;
 
+import com.baidu.paddle.lite.demo.ocr.Predictor;
 import com.laifeng.sopcastsdk.camera.exception.CameraHardwareException;
 import com.laifeng.sopcastsdk.camera.exception.CameraNotSupportException;
 import com.laifeng.sopcastsdk.configuration.CameraConfiguration;
@@ -43,6 +44,19 @@ public class CameraHolder {
     private boolean isTouchMode = false;
     private boolean isOpenBackFirst = false;
     private CameraConfiguration mConfiguration = CameraConfiguration.createDefault();
+    protected Predictor predictor = new Predictor();
+
+    //模型需要信息
+    protected String modelPath = "models/ocr_v1.1";
+    protected String labelPath = "labels/ppocr_keys_v1.txt";
+    protected String imagePath = "images/5.jpg";
+    protected int cpuThreadNum = 4;
+    protected String cpuPowerMode = "LITE_POWER_HIGH";
+    protected String inputColorFormat = "BGR";
+    protected long[] inputShape = new long[]{1,3,960};
+    protected float[] inputMean = new float[]{(float)0.485,(float) 0.456, (float)0.406};
+    protected float[] inputStd = new float[]{(float)0.229,(float)0.224,(float)0.225};
+    protected float scoreThreshold = 0.1f;
 
     public enum State {
         INIT,
@@ -61,6 +75,12 @@ public class CameraHolder {
 
     private CameraHolder() {
         mState = State.INIT;
+
+        boolean initResult =  predictor.init(getApplicationContext(), modelPath, labelPath, cpuThreadNum,
+                cpuPowerMode,
+                inputColorFormat,
+                inputShape, inputMean,
+                inputStd, scoreThreshold);
     }
 
     public int getNumberOfCameras() {
