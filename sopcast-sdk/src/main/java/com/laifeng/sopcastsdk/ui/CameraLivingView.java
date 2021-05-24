@@ -12,6 +12,7 @@ import android.media.MediaCodecInfo;
 import android.os.Build;
 import android.os.PowerManager;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import com.baidu.paddle.lite.demo.ocr.Predictor;
 import com.laifeng.sopcastsdk.audio.AudioUtils;
@@ -91,6 +92,12 @@ public class CameraLivingView extends CameraView {
     public CameraLivingView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initView();
+
+        boolean initResult =  predictor.init( context, modelPath, labelPath, cpuThreadNum,
+                cpuPowerMode,
+                inputColorFormat,
+                inputShape, inputMean,
+                inputStd, scoreThreshold);
         mContext = context;
     }
 
@@ -133,7 +140,12 @@ public class CameraLivingView extends CameraView {
         PlanarYUVLuminanceSource source = new PlanarYUVLuminanceSource(data, cameraResolution.x, cameraResolution.y, rect.left, rect.top,
                 rect.width(), rect.height(), false);
 
-        Bitmap bitmap = source.renderCroppedGreyscaleBitmap();
+        Bitmap image = source.renderCroppedGreyscaleBitmap();
+
+        predictor.setInputImage(image);
+        predictor.runModel();
+
+        Log.d(TAG, "ocrDetect: "+predictor.outputResult());
     }
 
     private void initView() {
