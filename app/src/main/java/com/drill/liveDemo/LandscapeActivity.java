@@ -1835,6 +1835,7 @@ public class LandscapeActivity extends Activity {
                 mScanAfterButton.setBackgroundColor(Color.RED);
             }
         });
+        mLFLiveView.mute(true);
     }
 
     private void loadLiveViewConfig() {
